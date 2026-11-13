@@ -41,6 +41,12 @@ All progress is stored in the browser on the device. Nothing is uploaded.
 - `src/engine/session.ts`: builds sessions and blueprint-matched mock papers.
 - `src/chem/`: formula parser, formula mass and an exact equation balancer (atoms and charge).
 
+## Installing on a phone
+
+- **From the browser (all phones):** the app shows an Install card on the home screen. On Android it is one tap plus a confirmation; on iPhone it shows the Share > Add to Home Screen steps. Code: `src/install.ts`, `src/components/InstallCard.tsx`.
+- **Android app (APK):** `android/` is a Capacitor project that wraps the same web app. The deploy workflow builds the APK, installs and opens it on an Android emulator (`scripts/apk-smoke-test.sh`), and publishes it as the latest GitHub release, which is what the in-app "Download the APK" link points to. Android 7.0 or newer.
+- **Signing:** every APK must be signed with the same key or phones will refuse the update. The key lives in `android-signing/` on the owner's computer (git-ignored) and in the repository's Actions secrets. `bash scripts/set-signing-secrets.sh` uploads it once. Without the secrets the workflow still builds and tests a test-signed APK but does not release it.
+
 ## AI tutor
 
 `src/tutor/` holds the tutor: `providers.ts` (the list of providers, saved settings, one session interface for the chat screen), `gemini.ts` (Google's SDK, free-tier models), `claude.ts` (Anthropic's SDK, paid models, cost estimate), `tools.ts` (formula mass, balancing, equation checking, arithmetic, element data), `prompt.ts` (the teaching instructions) and `retrieve.ts` (lesson search used for grounding).
