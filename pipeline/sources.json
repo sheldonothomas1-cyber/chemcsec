@@ -1,0 +1,15 @@
+{
+  "_readme": "Every source needs url, license and attribution. mode 'ingest' is only honoured for open licences (see ALLOWED in harvest.py); everything else is link-only and is never copied. Optional 'topic' (e.g. 'C1') overrides automatic filing. Add pages here, then run: pipeline/.venv/Scripts/python pipeline/harvest.py",
+  "sources": [
+    { "url": "https://openstax.org/books/chemistry-2e/pages/3-1-formula-mass-and-the-mole-concept", "license": "CC BY-NC-SA 4.0", "attribution": "Flowers, Theopold, Langley and Robinson, Chemistry 2e, OpenStax (openstax.org/books/chemistry-2e).", "mode": "ingest" },
+    { "url": "https://openstax.org/books/chemistry-2e/pages/4-3-reaction-stoichiometry", "license": "CC BY-NC-SA 4.0", "attribution": "Flowers, Theopold, Langley and Robinson, Chemistry 2e, OpenStax (openstax.org/books/chemistry-2e).", "mode": "ingest" },
+    { "url": "https://openstax.org/books/chemistry-2e/pages/12-2-factors-affecting-reaction-rates", "license": "CC BY-NC-SA 4.0", "attribution": "Flowers, Theopold, Langley and Robinson, Chemistry 2e, OpenStax (openstax.org/books/chemistry-2e).", "mode": "ingest" },
+    { "url": "https://en.wikipedia.org/wiki/Electrolysis", "license": "CC BY-SA 4.0", "attribution": "Wikipedia contributors, 'Electrolysis', Wikipedia.", "mode": "ingest" },
+    { "url": "https://en.wikipedia.org/wiki/Titration", "license": "CC BY-SA 4.0", "attribution": "Wikipedia contributors, 'Titration', Wikipedia.", "mode": "ingest" },
+    { "url": "https://en.wikipedia.org/wiki/Reactivity_series", "license": "CC BY-SA 4.0", "attribution": "Wikipedia contributors, 'Reactivity series', Wikipedia.", "mode": "ingest", "topic": "C1" },
+    { "url": "https://en.wikipedia.org/wiki/Isotope", "license": "CC BY-SA 4.0", "attribution": "Wikipedia contributors, 'Isotope', Wikipedia.", "mode": "ingest" },
+    { "url": "https://en.wikipedia.org/wiki/Fractional_distillation", "license": "CC BY-SA 4.0", "attribution": "Wikipedia contributors, 'Fractional distillation', Wikipedia.", "mode": "ingest" },
+    { "url": "https://www.cxc.org/subject-reports/", "license": "All rights reserved (CXC)", "attribution": "Caribbean Examinations Council.", "mode": "link-only" },
+    { "url": "https://online.fliphtml5.com/tmlho/phcl/", "license": "All rights reserved (Oxford University Press)", "attribution": "Chemistry for CSEC Study Guide, Oxford University Press.", "mode": "link-only" }
+  ]
+}

@@ -1,0 +1,416 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Rich, chemHtml } from '../components/Rich';
+import { balanceText, isBalanced } from '../chem/balance';
+import { ELEMENTS, shells, type Element } from '../chem/elements';
+import { massBreakdown, molarMass, round } from '../chem/formula';
+import { RESOURCES, SBA_SKELETON, SBA_SKILLS } from '../content/extras';
+import { fmt } from '../content/generators';
+import { TOPIC_BY_ID } from '../content/syllabus';
+import { search } from '../tutor/retrieve';
+import { exportData, importData, resetAll, setProfile, toggleSba, useStore } from '../store';
+
+export function MoreMenu() {
+  const items = [
+    ['/tools', 'Calculators and periodic table', 'Formula mass, equation balancer and element data'],
+    ['/tutor', 'AI tutor', 'Ask questions and get checked, with calculations done by the app. Free with Gemini; needs internet'],
+    ['/help', 'Search the lessons', 'Find the idea you are stuck on, offline'],
+    ['/sba', 'SBA and practical skills', 'Checklists for the four skills and a lab report outline'],
+    ['/resources', 'Resources', 'Official CXC material, open textbooks, simulations and video'],
+    ['/settings', 'Settings and your data', 'Name, exam date, backup and reset'],
+  ];
+  return (
+    <div className="page">
+      <h1>More</h1>
+      <div className="list">
+        {items.map(([to, title, note]) => (
+          <Link key={to} to={to}>
+            <span>
+              <h3>{title}</h3>
+              <span className="small muted">{note}</span>
+            </span>
+            <span className="go">Open</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---------- calculators ----------
+function MolarMass() {
+  const [formula, setFormula] = useState('CaCO3');
+  const [mass, setMass] = useState('');
+  const result = useMemo(() => {
+    if (!formula.trim()) return null;
+    try {
+      return { rows: massBreakdown(formula), total: molarMass(formula), error: null };
+    } catch (e) {
+      return { rows: null, total: 0, error: (e as Error).message };
+    }
+  }, [formula]);
+  const grams = parseFloat(mass);
+  return (
+    <section className="stack">
+      <h2>Formula mass</h2>
+      <div className="field">
+        <label htmlFor="mm-formula">Formula</label>
+        <input id="mm-formula" className="input" value={formula} onChange={(e) => setFormula(e.target.value)} autoCapitalize="off" autoCorrect="off" spellCheck={false} />
+        <span className="small muted">Capitals matter: Co is cobalt, CO is carbon monoxide. Brackets work: Ca(OH)2.</span>
+      </div>
+      {result?.error && <p role="alert" style={{ color: 'var(--red)' }}>{result.error}. Check the capital letters and brackets.</p>}
+      {result?.rows && (
+        <div className="sheet flat stack">
+          <p style={{ fontSize: '1.3rem' }} dangerouslySetInnerHTML={{ __html: chemHtml(formula) }} />
+          <table className="data">
+            <thead><tr><th>Element</th><th>Atoms</th><th>Atomic mass</th><th>Subtotal</th></tr></thead>
+            <tbody>
+              {result.rows.map((r) => <tr key={r.el}><td>{r.el}</td><td>{r.n}</td><td>{r.ar}</td><td>{r.sub}</td></tr>)}
+              <tr><td>Formula mass</td><td /><td /><td><strong>{result.total}</strong></td></tr>
+            </tbody>
+          </table>
+          <div className="field">
+            <label htmlFor="mm-mass">Mass in grams (optional)</label>
+            <input id="mm-mass" className="input" inputMode="decimal" value={mass} onChange={(e) => setMass(e.target.value)} />
+          </div>
+          {grams > 0 && (
+            <p>
+              {grams} g ÷ {result.total} = <strong>{fmt(grams / result.total)} mol</strong>. As a gas at room temperature and pressure that would occupy {fmt(round((grams / result.total) * 24, 4))} dm³.
+            </p>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function Balancer() {
+  const [eq, setEq] = useState('Fe2O3 + CO -> Fe + CO2');
+  const result = useMemo(() => {
+    if (!eq.trim()) return null;
+    try {
+      const already = isBalanced(eq);
+      const b = balanceText(eq);
+      return { already, b };
+    } catch (e) {
+      return { error: (e as Error).message };
+    }
+  }, [eq]);
+  return (
+    <section className="stack">
+      <h2>Equation balancer</h2>
+      <div className="field">
+        <label htmlFor="bal-eq">Equation</label>
+        <input id="bal-eq" className="input" value={eq} onChange={(e) => setEq(e.target.value)} autoCapitalize="off" autoCorrect="off" spellCheck={false} />
+        <span className="small muted">Put spaces around each + and use {'->'} for the arrow. Ions work too: Fe^2+ + Cl2 {'->'} Fe^3+ + Cl-</span>
+      </div>
+      {result && 'error' in result && <p role="alert" style={{ color: 'var(--red)' }}>{result.error}</p>}
+      {result && 'b' in result && (
+        <div className="sheet flat stack tight">
+          {result.b ? (
+            <>
+              <p className="label">{result.already ? 'Your equation is already balanced' : 'Balanced equation'}</p>
+              <p style={{ fontSize: '1.25rem' }} dangerouslySetInnerHTML={{ __html: chemHtml(result.b.text) }} />
+            </>
+          ) : (
+            <p>This cannot be balanced as written. Check that every element appears on both sides and that the formulae are right.</p>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PeriodicTable() {
+  const [sel, setSel] = useState<Element>(ELEMENTS[5]);
+  const grid = ELEMENTS.filter((e) => e.group > 0);
+  const extra = ELEMENTS.filter((e) => e.group === 0);
+  const sh = shells(sel.z);
+  return (
+    <section className="stack">
+      <h2>Periodic table</h2>
+      <p className="muted small">The first four periods, plus heavier elements that appear in CSEC questions. Tap an element.</p>
+      <div className="scroll-x">
+        <div className="ptable">
+          {grid.map((e) => (
+            <button
+              key={e.z} type="button" className={`el ${e.kind} ${sel.z === e.z ? 'on' : ''}`}
+              style={{ gridColumn: e.group, gridRow: e.period }} onClick={() => setSel(e)} aria-label={e.name}
+            >
+              <span><small>{e.z}</small>{e.sym}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="row">
+        {extra.map((e) => (
+          <button key={e.z} type="button" className={`el ${e.kind} ${sel.z === e.z ? 'on' : ''}`} style={{ width: 46 }} onClick={() => setSel(e)} aria-label={e.name}>
+            <span><small>{e.z}</small>{e.sym}</span>
+          </button>
+        ))}
+      </div>
+      <div className="sheet flat" aria-live="polite">
+        <h3>{sel.name} ({sel.sym})</h3>
+        <p>
+          Atomic number {sel.z}. Relative atomic mass {sel.ar}. {sel.kind === 'noble' ? 'Noble gas' : sel.kind === 'nonmetal' ? 'Non-metal' : sel.kind === 'metalloid' ? 'Metalloid' : 'Metal'}
+          {sel.group > 0 ? `, Group ${groupName(sel.group)}, Period ${sel.period}` : ''}.
+          {sh ? ` Electron arrangement ${sh.join(',')}.` : ''}
+        </p>
+      </div>
+      <div className="legend">
+        <span><i style={{ background: 'var(--blue-soft)' }} />Metal</span>
+        <span><i style={{ background: 'var(--green-soft)' }} />Metalloid</span>
+        <span><i style={{ background: 'var(--orange-soft)' }} />Non-metal</span>
+        <span><i style={{ background: 'var(--violet-soft)' }} />Noble gas</span>
+      </div>
+    </section>
+  );
+}
+
+function groupName(g: number): string {
+  const main: Record<number, string> = { 1: 'I', 2: 'II', 13: 'III', 14: 'IV', 15: 'V', 16: 'VI', 17: 'VII', 18: '0' };
+  return main[g] ?? `${g} (transition metal)`;
+}
+
+export function Tools() {
+  return (
+    <div className="page">
+      <header className="stack tight">
+        <h1>Calculators</h1>
+        <p className="muted">Use these to check your working, not to replace it. They use the rounded atomic masses CSEC papers give you.</p>
+      </header>
+      <MolarMass />
+      <Balancer />
+      <PeriodicTable />
+    </div>
+  );
+}
+
+// ---------- help search ----------
+export function Help() {
+  const [query, setQuery] = useState('');
+  const results = useMemo(() => search(query), [query]);
+  const ideas = ['strong or concentrated acid', 'mole ratio', 'anode and cathode', 'equilibrium', 'isotopes', 'catalyst', 'white precipitate', 'bond breaking'];
+  return (
+    <div className="page">
+      <header className="stack tight">
+        <h1>Search the lessons</h1>
+        <p className="muted">Type the idea that is confusing you. This searches every lesson on your device, so it works offline.</p>
+      </header>
+      <div className="field">
+        <label htmlFor="help-q">What are you stuck on?</label>
+        <input id="help-q" className="input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="e.g. why does graphite conduct" />
+      </div>
+      {!query && (
+        <div className="row">
+          {ideas.map((x) => <button key={x} type="button" className="btn" style={{ minHeight: 40, padding: '0 14px' }} onClick={() => setQuery(x)}>{x}</button>)}
+        </div>
+      )}
+      {query && results.length === 0 && <p className="muted">Nothing matched. Try one or two key words, such as "electrolysis" or "titration".</p>}
+      <div className="stack">
+        {results.map((e, i) => (
+          <div key={i} className="sheet flat stack tight">
+            <div className="row">
+              <span className="chip">{e.kind}</span>
+              <Link to={`/learn/${e.topic}`} className="small">{TOPIC_BY_ID[e.topic].name}</Link>
+            </div>
+            <p className="label"><Rich text={e.title} /></p>
+            <p><Rich text={e.body} /></p>
+          </div>
+        ))}
+      </div>
+      <p className="small muted">
+        Want a conversation instead? The <Link to="/tutor">AI tutor</Link> explains and then checks you understood. It needs an internet connection and a key, which is free for Gemini.
+      </p>
+    </div>
+  );
+}
+
+// ---------- resources ----------
+interface Harvested {
+  topic: string;
+  title: string;
+  url: string;
+  source: string;
+  license: string;
+  attribution: string;
+  excerpt: string;
+}
+
+export function Resources() {
+  const [library, setLibrary] = useState<Harvested[]>([]);
+  useEffect(() => {
+    fetch('./content/library.json')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => setLibrary(Array.isArray(d) ? d : []))
+      .catch(() => setLibrary([]));
+  }, []);
+  const byTopic = useMemo(() => {
+    const m: Record<string, Harvested[]> = {};
+    for (const h of library) (m[h.topic] ??= []).push(h);
+    return m;
+  }, [library]);
+  return (
+    <div className="page">
+      <header className="stack tight">
+        <h1>Resources</h1>
+        <p className="muted">The best free material for CSEC Chemistry, and the two paid items worth knowing about. These open in your browser and need data.</p>
+      </header>
+      {RESOURCES.map((g) => (
+        <section key={g.group} className="stack">
+          <h2>{g.group}</h2>
+          <div className="list">
+            {g.items.map((r) => (
+              <a key={r.url} href={r.url} target="_blank" rel="noreferrer">
+                <span>
+                  <h3>{r.name}</h3>
+                  <span className="small muted">{r.note}</span>
+                </span>
+                <span className={`chip ${r.cost === 'Free' ? 'ok' : ''}`}>{r.cost}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+      {library.length > 0 && (
+        <section className="stack">
+          <h2>Open-licensed reading, by topic</h2>
+          <p className="muted small">Collected by this app's content pipeline from sources whose licences allow reuse. Each entry names its source and licence.</p>
+          {Object.entries(byTopic).sort().map(([topic, items]) => (
+            <div key={topic} className="stack tight">
+              <p className="label">{TOPIC_BY_ID[topic]?.name ?? topic}</p>
+              {items.map((h) => (
+                <div key={h.url} className="sheet flat stack tight">
+                  <a href={h.url} target="_blank" rel="noreferrer"><strong>{h.title}</strong></a>
+                  <p className="small">{h.excerpt}</p>
+                  <p className="small muted">{h.attribution} Licence: {h.license}.</p>
+                </div>
+              ))}
+            </div>
+          ))}
+        </section>
+      )}
+    </div>
+  );
+}
+
+// ---------- SBA ----------
+export function Sba() {
+  const s = useStore();
+  return (
+    <div className="page">
+      <header className="stack tight">
+        <h1>SBA and practical skills</h1>
+        <p className="muted">
+          School-based assessment marks four skills. Private candidates sit Paper 03/2 instead, which tests the same skills on paper. Tick these off against your own lab reports.
+        </p>
+      </header>
+      {SBA_SKILLS.map((skill) => {
+        const done = skill.checks.filter((_, i) => s.sba[`${skill.id}-${i}`]).length;
+        return (
+          <section key={skill.id} className="stack tight">
+            <div className="between">
+              <h2>{skill.name}</h2>
+              <span className="chip">{done} of {skill.checks.length}</span>
+            </div>
+            <p className="muted">{skill.about}</p>
+            <div>
+              {skill.checks.map((c, i) => (
+                <label key={i} className="check">
+                  <input type="checkbox" checked={!!s.sba[`${skill.id}-${i}`]} onChange={() => toggleSba(`${skill.id}-${i}`)} />
+                  <span>{c}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+      <section className="sheet stack">
+        <h2>Lab report outline</h2>
+        <p className="muted small">Fill each heading with your own work. Never copy results: moderators compare reports, and invented data cannot be explained in the discussion.</p>
+        <ol className="steps">
+          {SBA_SKELETON.map(([h, p]) => <li key={h}><strong>{h}.</strong> {p}</li>)}
+        </ol>
+      </section>
+      <p className="small muted">Virtual labs for practising these skills are listed under <Link to="/resources">Resources</Link>.</p>
+    </div>
+  );
+}
+
+// ---------- settings ----------
+export function Settings() {
+  const s = useStore();
+  const [msg, setMsg] = useState('');
+  const [confirmReset, setConfirmReset] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const download = () => {
+    const blob = new Blob([exportData()], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `chemcsec-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    setMsg('Backup saved to your downloads.');
+  };
+  const restore = async (file: File | undefined) => {
+    if (!file) return;
+    setMsg(importData(await file.text()) ? 'Backup restored.' : 'That file is not a ChemCSEC backup. Nothing was changed.');
+  };
+
+  return (
+    <div className="page">
+      <h1>Settings and your data</h1>
+      <section className="stack">
+        <div className="field">
+          <label htmlFor="set-name">Your name</label>
+          <input id="set-name" className="input" value={s.name} onChange={(e) => setProfile({ name: e.target.value })} autoComplete="given-name" />
+        </div>
+        <div className="field">
+          <label htmlFor="set-date">Exam date</label>
+          <input id="set-date" className="input" type="date" value={s.examDate ?? ''} onChange={(e) => setProfile({ examDate: e.target.value || null })} />
+        </div>
+      </section>
+      <section className="stack">
+        <h2>Your data</h2>
+        <p className="muted">
+          Your answers and progress are stored only in this browser on this device. Nothing is uploaded. Save a backup before clearing your browser or changing phones.
+        </p>
+        <div className="row">
+          <button className="btn" type="button" onClick={download}>Save a backup</button>
+          <button className="btn" type="button" onClick={() => fileRef.current?.click()}>Restore a backup</button>
+          <input ref={fileRef} type="file" accept="application/json" className="sr-only" tabIndex={-1} onChange={(e) => restore(e.target.files?.[0])} aria-label="Choose a backup file" />
+        </div>
+        {msg && <p role="status">{msg}</p>}
+        {confirmReset ? (
+          <div className="sheet stack">
+            <p><strong>Delete all progress on this device?</strong> This removes every answer, review and mock result and cannot be undone.</p>
+            <div className="row">
+              <button
+                className="btn" style={{ borderColor: 'var(--red)', color: 'var(--red)' }} type="button"
+                onClick={() => {
+                  resetAll();
+                  setConfirmReset(false);
+                  setMsg('All progress deleted.');
+                }}
+              >
+                Delete all progress
+              </button>
+              <button className="btn" type="button" onClick={() => setConfirmReset(false)}>Keep my progress</button>
+            </div>
+          </div>
+        ) : (
+          <div><button className="btn quiet" style={{ color: 'var(--red)' }} type="button" onClick={() => setConfirmReset(true)}>Delete all progress</button></div>
+        )}
+      </section>
+      <section className="stack tight">
+        <h2>About</h2>
+        <p className="muted small">
+          ChemCSEC is an independent study tool for syllabus CXC 21/G/SYLL 13. It is not affiliated with or endorsed by the Caribbean Examinations Council.
+          All questions and lessons are original. CXC past papers, mark schemes and reports remain the copyright of CXC and are linked, never copied.
+          Every calculation and equation in the app is checked by code before it reaches you.
+        </p>
+      </section>
+    </div>
+  );
+}

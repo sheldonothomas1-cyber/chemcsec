@@ -1,0 +1,2 @@
+trafilatura
+youtube-transcript-api

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+dev-dist/
+pipeline/.venv/
+pipeline/out/
+*.log
+
+# Kept on this computer only, not published:
+# the private research report and its tables, and local assistant settings and skills.
+docs/research/
+.claude/

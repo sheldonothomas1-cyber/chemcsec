@@ -1,0 +1,74 @@
+[
+ {
+  "topic": "A6",
+  "title": "3.1 Formula Mass and the Mole Concept - Chemistry 2e | OpenStax",
+  "url": "https://openstax.org/books/chemistry-2e/pages/3-1-formula-mass-and-the-mole-concept",
+  "source": "openstax.org",
+  "license": "CC BY-NC-SA 4.0",
+  "attribution": "Flowers, Theopold, Langley and Robinson, Chemistry 2e, OpenStax (openstax.org/books/chemistry-2e).",
+  "excerpt": "3.1 Formula Mass and the Mole Concept By the end of this section, you will be able to: - Calculate formula masses for covalent and ionic compounds - Define the amount unit mole and the related quantity Avogadro’s number - Explain the relation between mass, moles, and numbers of atoms or molecules, and perform..."
+ },
+ {
+  "topic": "A6",
+  "title": "4.3 Reaction Stoichiometry - Chemistry 2e | OpenStax",
+  "url": "https://openstax.org/books/chemistry-2e/pages/4-3-reaction-stoichiometry",
+  "source": "openstax.org",
+  "license": "CC BY-NC-SA 4.0",
+  "attribution": "Flowers, Theopold, Langley and Robinson, Chemistry 2e, OpenStax (openstax.org/books/chemistry-2e).",
+  "excerpt": "4.3 Reaction Stoichiometry By the end of this section, you will be able to: - Explain the concept of stoichiometry as it pertains to chemical reactions - Use balanced chemical equations to derive stoichiometric factors relating amounts of reactants and products - Perform stoichiometric calculations involving mass,..."
+ },
+ {
+  "topic": "A10",
+  "title": "12.2 Factors Affecting Reaction Rates - Chemistry 2e | OpenStax",
+  "url": "https://openstax.org/books/chemistry-2e/pages/12-2-factors-affecting-reaction-rates",
+  "source": "openstax.org",
+  "license": "CC BY-NC-SA 4.0",
+  "attribution": "Flowers, Theopold, Langley and Robinson, Chemistry 2e, OpenStax (openstax.org/books/chemistry-2e).",
+  "excerpt": "12.2 Factors Affecting Reaction Rates By the end of this section, you will be able to: - Describe the effects of chemical nature, physical state, temperature, concentration, and catalysis on reaction rates The rates at which reactants are consumed and products are formed during chemical reactions vary greatly. Five..."
+ },
+ {
+  "topic": "A9",
+  "title": "Electrolysis - Wikipedia",
+  "url": "https://en.wikipedia.org/wiki/Electrolysis",
+  "source": "en.wikipedia.org",
+  "license": "CC BY-SA 4.0",
+  "attribution": "Wikipedia contributors, 'Electrolysis', Wikipedia.",
+  "excerpt": "In chemistry and manufacturing, electrolysis is a technique that uses direct electric current (DC) to drive an otherwise non-spontaneous biological and physical reaction. Electrolysis is commercially important as a stage in the separation of elements from naturally occurring sources such as ores using an electrolytic..."
+ },
+ {
+  "topic": "A7",
+  "title": "Titration - Wikipedia",
+  "url": "https://en.wikipedia.org/wiki/Titration",
+  "source": "en.wikipedia.org",
+  "license": "CC BY-SA 4.0",
+  "attribution": "Wikipedia contributors, 'Titration', Wikipedia.",
+  "excerpt": "Titration (also known as titrimetry[1] and volumetric analysis) is a common laboratory method of quantitative chemical analysis to determine the concentration of an identified analyte (a substance to be analyzed). A reagent, termed the titrant or titrator,[2] is prepared as a standard solution of known concentration..."
+ },
+ {
+  "topic": "C1",
+  "title": "Reactivity series - Wikipedia",
+  "url": "https://en.wikipedia.org/wiki/Reactivity_series",
+  "source": "en.wikipedia.org",
+  "license": "CC BY-SA 4.0",
+  "attribution": "Wikipedia contributors, 'Reactivity series', Wikipedia.",
+  "excerpt": "In chemistry, a reactivity series (or reactivity series of elements) is an empirical, calculated, and structurally analytical progression[1] of a series of metals, arranged by their \"reactivity\" from highest to lowest.[2][3][4] It is used to summarize information about the reactions of metals with acids and water,..."
+ },
+ {
+  "topic": "A3",
+  "title": "Isotope - Wikipedia",
+  "url": "https://en.wikipedia.org/wiki/Isotope",
+  "source": "en.wikipedia.org",
+  "license": "CC BY-SA 4.0",
+  "attribution": "Wikipedia contributors, 'Isotope', Wikipedia.",
+  "excerpt": "Isotopes are distinct nuclear species (or nuclides) of the same chemical element. They have the same atomic number (number of protons in their nuclei) and position in the periodic table (and hence belong to the same chemical element), but different nucleon numbers (mass numbers) due to different numbers of neutrons in..."
+ },
+ {
+  "topic": "A2",
+  "title": "Fractional distillation - Wikipedia",
+  "url": "https://en.wikipedia.org/wiki/Fractional_distillation",
+  "source": "en.wikipedia.org",
+  "license": "CC BY-SA 4.0",
+  "attribution": "Wikipedia contributors, 'Fractional distillation', Wikipedia.",
+  "excerpt": "Fractional distillation is the separation of a mixture into its component parts, or fractions. Chemical compounds are separated by heating them to a temperature at which one or more fractions of the mixture will vaporize. It uses distillation to fractionate. Generally the component parts have boiling points that..."
+ }
+]
