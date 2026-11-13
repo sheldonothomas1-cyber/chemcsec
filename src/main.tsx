@@ -6,10 +6,12 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 import { registerSW } from 'virtual:pwa-register';
+import { isNativeApp } from './install';
 import { App } from './App';
 
 // Offline support: the service worker caches the whole app after the first visit.
-registerSW({ immediate: true });
+// The Android app (APK) already carries every file, so it does not need one.
+if (!isNativeApp) registerSW({ immediate: true });
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

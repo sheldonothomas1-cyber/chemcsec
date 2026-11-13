@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { ExamHub, Paper1, Paper2 } from './pages/Exam';
 import { LearnMap, TopicPage } from './pages/Learn';
-import { Help, MoreMenu, Resources, Sba, Settings, Tools } from './pages/More';
+import { Help, Install, MoreMenu, Resources, Sba, Settings, Tools } from './pages/More';
 import { PracticeHub, PracticeRun } from './pages/Practice';
 import { Progress } from './pages/Progress';
 import { Today } from './pages/Today';
@@ -94,6 +94,7 @@ export function App() {
           <Route path="/help" element={<Help />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/sba" element={<Sba />} />
+          <Route path="/install" element={<Install />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Today />} />
         </Routes>

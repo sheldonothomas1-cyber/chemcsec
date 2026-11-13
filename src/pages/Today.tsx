@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { InstallCard } from '../components/InstallCard';
 import { TopicTile } from '../components/Tile';
 import { TOPICS, TOPIC_BY_ID } from '../content/syllabus';
 import { daysToExam, dueChecks, dueObjectives, nextTopic, overallMastery, streak, todayStats } from '../engine/select';
@@ -93,6 +94,7 @@ export function Today() {
       </section>
 
       {!s.onboarded && <Welcome />}
+      <InstallCard />
 
       <section className="facts" aria-label="Your numbers">
         <div>

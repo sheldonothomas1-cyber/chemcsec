@@ -1,5 +1,7 @@
-# Builds the app and publishes it to GitHub Pages every time main is updated.
-name: Deploy to GitHub Pages
+# On every update to main: test, publish the website to GitHub Pages, and build, test and
+# release the Android app (APK). One run number is shared by both, so an installed APK can
+# tell when a newer build exists.
+name: Deploy site and Android app
 
 on:
   push:
@@ -8,12 +10,13 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  BUILD_NUMBER: ${{ github.run_number }}
 
 jobs:
   build:
@@ -35,9 +38,113 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  apk:
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      signed: ${{ steps.build.outputs.signed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm run build
+      - name: Copy the web app into the Android project
+        run: npx cap sync android
+      - name: Build the APK
+        id: build
+        working-directory: android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: chemcsec
+        run: |
+          chmod +x gradlew
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.p12"
+            export KEYSTORE_FILE="$RUNNER_TEMP/release.p12"
+            ./gradlew assembleRelease --no-daemon
+            rm -f "$RUNNER_TEMP/release.p12"
+            cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/ChemCSEC.apk"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          else
+            # Without the signing key the app is still built and tested, but never released:
+            # a test-signed APK could not be updated later without uninstalling it first.
+            echo "::warning::Signing key secrets are not set. Building a test-only APK; no release will be published. Run scripts/set-signing-secrets.sh once to enable releases."
+            ./gradlew assembleDebug --no-daemon
+            cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/ChemCSEC.apk"
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Check the signature and package details
+        run: |
+          TOOLS=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$TOOLS/apksigner" verify --print-certs ChemCSEC.apk
+          "$TOOLS/aapt" dump badging ChemCSEC.apk | grep -E "^package|^sdkVersion|^targetSdkVersion|^application-label:"
+          ls -la ChemCSEC.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: ChemCSEC.apk
+
+  smoke-test:
+    needs: apk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk
+      - name: Enable hardware acceleration for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install and open the APK on an Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          script: bash scripts/apk-smoke-test.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test
+          path: smoke
+
+  release:
+    needs: [apk, smoke-test, deploy]
+    if: needs.apk.outputs.signed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk
+      - name: Publish the APK as the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${BUILD_NUMBER}" ChemCSEC.apk \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
+            --title "ChemCSEC build ${BUILD_NUMBER}" \
+            --notes "Android app for CSEC Chemistry. Download ChemCSEC.apk and open it to install. Android will ask you to allow installs from your browser or file manager because the app is not from the Play Store. The same app is available without an APK at https://sheldonothomas1-cyber.github.io/chemcsec/"

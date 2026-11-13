@@ -5,6 +5,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   base: './',
+  // The deploy workflow passes its run number, so an installed APK can tell when a newer build exists.
+  define: { __BUILD__: Number(process.env.BUILD_NUMBER ?? 0) },
   plugins: [
     react(),
     VitePWA({

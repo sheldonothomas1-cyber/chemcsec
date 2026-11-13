@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ChemCSEC</string>
+    <string name="title_activity_main">ChemCSEC</string>
+    <string name="package_name">io.github.sheldonothomas1cyber.chemcsec</string>
+    <string name="custom_url_scheme">io.github.sheldonothomas1cyber.chemcsec</string>
+</resources>

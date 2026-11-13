@@ -9,3 +9,6 @@ pipeline/out/
 # the private research report and its tables, and local assistant settings and skills.
 docs/research/
 .claude/
+
+# Android signing key: kept on this computer and in GitHub secrets, never in the repository.
+android-signing/

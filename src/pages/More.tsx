@@ -7,6 +7,8 @@ import { massBreakdown, molarMass, round } from '../chem/formula';
 import { RESOURCES, SBA_SKELETON, SBA_SKILLS } from '../content/extras';
 import { fmt } from '../content/generators';
 import { TOPIC_BY_ID } from '../content/syllabus';
+import { InstallSteps } from '../components/InstallCard';
+import { APK_URL, isNativeApp, SITE_URL, useApkAvailable } from '../install';
 import { search } from '../tutor/retrieve';
 import { exportData, importData, resetAll, setProfile, toggleSba, useStore } from '../store';
 
@@ -17,6 +19,7 @@ export function MoreMenu() {
     ['/help', 'Search the lessons', 'Find the idea you are stuck on, offline'],
     ['/sba', 'SBA and practical skills', 'Checklists for the four skills and a lab report outline'],
     ['/resources', 'Resources', 'Official CXC material, open textbooks, simulations and video'],
+    ['/install', 'Install on your phone', 'One-tap install, the Android APK, and how to share the app'],
     ['/settings', 'Settings and your data', 'Name, exam date, backup and reset'],
   ];
   return (
@@ -337,6 +340,64 @@ export function Sba() {
   );
 }
 
+// ---------- install ----------
+export function Install() {
+  const apk = useApkAvailable();
+  const [copied, setCopied] = useState(false);
+  const share = async () => {
+    const data = { title: 'ChemCSEC', text: 'Free CSEC Chemistry study app: lessons, practice and mock exams that work offline.', url: SITE_URL };
+    try {
+      if (navigator.share) await navigator.share(data);
+      else {
+        await navigator.clipboard.writeText(SITE_URL);
+        setCopied(true);
+      }
+    } catch {
+      // The learner closed the share sheet; nothing to do.
+    }
+  };
+  return (
+    <div className="page">
+      <header className="stack tight">
+        <h1>Install on your phone</h1>
+        <p className="muted">Installed, ChemCSEC opens from your home screen and works with no data. Only the AI tutor needs the internet.</p>
+      </header>
+      <section className="sheet stack">
+        <h2>This device</h2>
+        <InstallSteps />
+      </section>
+      <section className="stack">
+        <h2>Two ways to install on Android</h2>
+        <div>
+          <div className="trap">
+            <p className="label">Install from the browser</p>
+            <p className="muted">One tap and a confirmation. Smallest download, and it updates itself whenever you open it online.</p>
+          </div>
+          <div className="trap">
+            <p className="label">Android app file (APK)</p>
+            <p className="muted">
+              A normal Android app you can send to a friend by WhatsApp or Bluetooth. It works offline from the first launch.
+              Android will ask permission to install it because it is not from the Play Store, and new versions have to be downloaded again.
+            </p>
+            {!isNativeApp && (apk
+              ? <div style={{ marginTop: 8 }}><a className="btn" href={APK_URL}>Download the APK</a></div>
+              : <p className="small muted" style={{ marginTop: 8 }}>The APK is not available to download yet.</p>)}
+          </div>
+        </div>
+        <p className="small muted">Your progress is stored separately by each method, so pick one and stay with it. To move progress, use Save a backup and Restore a backup in <Link to="/settings">Settings</Link>.</p>
+      </section>
+      <section className="stack">
+        <h2>Share it</h2>
+        <div className="row">
+          <button className="btn" type="button" onClick={share}>Share the link</button>
+          {copied && <span className="small muted" role="status">Link copied.</span>}
+        </div>
+        <p className="small muted">{SITE_URL}</p>
+      </section>
+    </div>
+  );
+}
+
 // ---------- settings ----------
 export function Settings() {
   const s = useStore();
@@ -344,11 +405,26 @@ export function Settings() {
   const [confirmReset, setConfirmReset] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const download = () => {
+  const download = async () => {
+    const name = `chemcsec-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    if (isNativeApp) {
+      // The Android app cannot "download" from itself, so write the file and hand it to the
+      // share sheet: the learner can save it to Files or Drive, or send it to themselves.
+      try {
+        const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
+        const { Share } = await import('@capacitor/share');
+        const { uri } = await Filesystem.writeFile({ path: name, data: exportData(), directory: Directory.Cache, encoding: Encoding.UTF8 });
+        await Share.share({ title: 'ChemCSEC backup', files: [uri], dialogTitle: 'Save your backup' });
+        setMsg('Backup ready. Save it somewhere you will find it again.');
+      } catch {
+        setMsg('The backup was not saved. Try again and choose where to keep the file.');
+      }
+      return;
+    }
     const blob = new Blob([exportData()], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `chemcsec-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = name;
     a.click();
     URL.revokeObjectURL(a.href);
     setMsg('Backup saved to your downloads.');
