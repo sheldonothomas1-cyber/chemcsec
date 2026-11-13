@@ -40,7 +40,13 @@ if [ -n "${BOUNDS:-}" ]; then
     echo "NOTE: the practice screen text was not found; check smoke/2-practice.png"
   fi
 else
-  echo "NOTE: could not find the start button to tap"
+  # The web view does not always expose its text to the accessibility tree. On a fresh install
+  # the start button sits about 29% across and 47% down the screen, so tap there instead.
+  read -r W H <<< "$(adb shell wm size | grep -o '[0-9]*x[0-9]*' | tail -1 | tr 'x' ' ')"
+  adb shell input tap $(( W * 29 / 100 )) $(( H * 47 / 100 ))
+  sleep 6
+  adb exec-out screencap -p > smoke/2-practice.png
+  echo "NOTE: tapped the start button by position; check smoke/2-practice.png"
 fi
 
 adb logcat -d > smoke/logcat.txt
