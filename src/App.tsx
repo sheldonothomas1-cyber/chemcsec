@@ -5,6 +5,9 @@ import { LearnMap, TopicPage } from './pages/Learn';
 import { Help, Install, MoreMenu, Resources, Sba, Settings, Tools } from './pages/More';
 import { PracticeHub, PracticeRun } from './pages/Practice';
 import { Progress } from './pages/Progress';
+import { Lab } from './pages/Lab';
+import { PeriodicTable } from './pages/PeriodicTable';
+import { Reference } from './pages/Reference';
 import { Today } from './pages/Today';
 
 // Loaded on demand: the tutor brings in the Anthropic SDK, which the rest of the app does not need.
@@ -35,6 +38,9 @@ const MAIN = [
   { to: '/progress', label: 'Progress', icon: ICONS.progress },
 ];
 const EXTRA = [
+  { to: '/lab', label: 'Virtual lab', icon: ICONS.practice },
+  { to: '/periodic-table', label: 'Periodic table', icon: ICONS.learn },
+  { to: '/reference', label: 'Quick reference', icon: ICONS.exam },
   { to: '/tools', label: 'Calculators', icon: ICONS.tools },
   { to: '/tutor', label: 'AI tutor', icon: ICONS.help },
   { to: '/help', label: 'Search lessons', icon: ICONS.search },
@@ -95,6 +101,10 @@ export function App() {
           <Route path="/resources" element={<Resources />} />
           <Route path="/sba" element={<Sba />} />
           <Route path="/install" element={<Install />} />
+          <Route path="/lab" element={<Lab />} />
+          <Route path="/lab/:bench" element={<Lab />} />
+          <Route path="/periodic-table" element={<PeriodicTable />} />
+          <Route path="/reference" element={<Reference />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Today />} />
         </Routes>

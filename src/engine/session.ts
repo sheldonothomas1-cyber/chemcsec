@@ -1,7 +1,10 @@
 // Builds what the learner actually sees: study sessions and blueprint-matched mock papers.
-import { fmt, GENERATORS, GENERATORS_BY_OBJ, mulberry32, type Generator, type Rng } from '../content/generators';
+// Questions come from three sources: the written bank (items), calculation generators
+// (fresh numbers each time) and question templates (fresh wording and data each time).
+import { fmt, GENERATOR_BY_ID, GENERATORS, GENERATORS_BY_OBJ, mulberry32, type Generator, type Rng } from '../content/generators';
 import { ITEMS, ITEMS_BY_OBJ, type McqItem } from '../content/items';
 import { ALL_OBJECTIVES, TOPICS, TOPIC_BY_ID, type Profile } from '../content/syllabus';
+import { TEMPLATE_BY_ID, TEMPLATES, TEMPLATES_BY_OBJ, type Template } from '../content/templates';
 import type { AppState } from '../store';
 import { dueObjectives, isReady, objN, objP, topicMastery } from './select';
 
@@ -25,6 +28,7 @@ export interface ServedQ {
 
 let serial = 0;
 const newKey = () => `q${Date.now().toString(36)}-${serial++}`;
+const ITEM_BY_ID: Record<string, McqItem> = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
 
 function shuffle<T>(xs: T[], rng: Rng): T[] {
   const a = [...xs];
@@ -35,27 +39,26 @@ function shuffle<T>(xs: T[], rng: Rng): T[] {
   return a;
 }
 
-export function serveItem(item: McqItem, rng: Rng): ServedQ {
+function serveOptions(id: string, obj: string, profile: Profile, stem: string, options: string[], why: string, rng: Rng, steps?: string[]): ServedQ {
   const order = shuffle([0, 1, 2, 3], rng);
-  return {
-    key: newKey(), itemId: item.id, obj: item.obj, profile: item.profile, kind: 'mcq',
-    stem: item.stem, options: order.map((i) => item.options[i]), correctIndex: order.indexOf(0), why: item.why,
-  };
+  return { key: newKey(), itemId: id, obj, profile, kind: 'mcq', stem, options: order.map((i) => options[i]), correctIndex: order.indexOf(0), why, steps };
+}
+
+export const serveItem = (item: McqItem, rng: Rng): ServedQ => serveOptions(item.id, item.obj, item.profile, item.stem, item.options, item.why, rng);
+
+export function serveTemplate(t: Template, rng: Rng): ServedQ {
+  const inst = t.make(rng);
+  return serveOptions(t.id, t.obj, t.profile, inst.stem, inst.options, inst.why, rng);
 }
 
 export function serveGenerator(g: Generator, rng: Rng, asMcq: boolean): ServedQ {
   const inst = g.make(rng);
-  const base = {
-    key: newKey(), itemId: g.id, obj: g.obj, profile: g.profile, stem: inst.stem,
-    why: inst.steps[inst.steps.length - 1], steps: inst.steps,
-  };
+  const why = inst.steps[inst.steps.length - 1];
   if (asMcq) {
     const label = (x: number) => `${fmt(x, inst.signed)}${inst.unit ? ' ' + inst.unit : ''}`;
-    const order = shuffle([0, 1, 2, 3], rng);
-    const all = [inst.answer, ...inst.distractors].map(label);
-    return { ...base, kind: 'mcq', options: order.map((i) => all[i]), correctIndex: order.indexOf(0) };
+    return serveOptions(g.id, g.obj, g.profile, inst.stem, [inst.answer, ...inst.distractors].map(label), why, rng, inst.steps);
   }
-  return { ...base, kind: 'num', answer: inst.answer, unit: inst.unit, exact: inst.exact, signed: inst.signed };
+  return { key: newKey(), itemId: g.id, obj: g.obj, profile: g.profile, kind: 'num', stem: inst.stem, why, steps: inst.steps, answer: inst.answer, unit: inst.unit, exact: inst.exact, signed: inst.signed };
 }
 
 /** Is a typed answer right? Whole-number answers must match; others get a 2% tolerance. */
@@ -68,19 +71,27 @@ export function checkTyped(q: ServedQ, raw: string): boolean | null {
   return Math.abs(x - q.answer) <= Math.max(Math.abs(q.answer) * 0.02, 1e-9);
 }
 
-/** Choose a question for an objective, preferring ones not yet seen, then ones answered badly. */
+/**
+ * Choose a question for an objective. Unseen questions come first, then ones answered badly,
+ * and the difficulty follows the learner: easier while the objective is new, harder once it is secure.
+ */
 function pickFor(s: AppState, obj: string, rng: Rng, used: Set<string>, asMcq = false): ServedQ | null {
+  const p = objP(s, obj);
+  const target = p < 0.4 ? 1 : p < 0.75 ? 2 : 3;
+  const fit = (diff: number) => Math.abs(diff - target) * 0.9;
   type Cand = { score: number; make: () => ServedQ; id: string };
   const cands: Cand[] = [];
   for (const item of ITEMS_BY_OBJ[obj] ?? []) {
     if (used.has(item.id)) continue;
     const [seen, right] = s.itemStats[item.id] ?? [0, 0];
-    const score = seen === 0 ? 0 : right / seen < 0.6 ? 1 : 3;
-    cands.push({ score: score + rng(), id: item.id, make: () => serveItem(item, rng) });
+    const base = seen === 0 ? 0 : right / seen < 0.6 ? 1 : 3;
+    cands.push({ score: base + fit(item.diff) + rng(), id: item.id, make: () => serveItem(item, rng) });
+  }
+  for (const t of TEMPLATES_BY_OBJ[obj] ?? []) {
+    cands.push({ score: 1 + (used.has(t.id) ? 2 : 0) + fit(t.diff) + rng(), id: t.id, make: () => serveTemplate(t, rng) });
   }
   for (const g of GENERATORS_BY_OBJ[obj] ?? []) {
-    const reuse = used.has(g.id) ? 2 : 0;
-    cands.push({ score: 1.2 + reuse + rng(), id: g.id, make: () => serveGenerator(g, rng, asMcq) });
+    cands.push({ score: 1.2 + (used.has(g.id) ? 2 : 0) + fit(g.diff) + rng(), id: g.id, make: () => serveGenerator(g, rng, asMcq) });
   }
   if (!cands.length) return null;
   const best = cands.sort((a, b) => a.score - b.score)[0];
@@ -164,6 +175,29 @@ export function buildReview(s: AppState, max = 15): ServedQ[] {
     .map((q) => ({ ...q, tag: 'review' as const }));
 }
 
+/** Questions whose most recent answer was wrong, newest first. */
+export function mistakeIds(s: AppState): string[] {
+  const latest = new Map<string, boolean>();
+  for (let i = s.attempts.length - 1; i >= 0; i--) {
+    const a = s.attempts[i];
+    if (!latest.has(a.item)) latest.set(a.item, a.ok);
+  }
+  return [...latest].filter(([, ok]) => !ok).map(([id]) => id);
+}
+
+/** A session made only of questions the learner last got wrong (or fresh versions of them). */
+export function buildMistakes(s: AppState, n = 10): ServedQ[] {
+  const rng = mulberry32(seedNow());
+  const out: ServedQ[] = [];
+  for (const id of mistakeIds(s)) {
+    if (out.length >= n) break;
+    if (ITEM_BY_ID[id]) out.push(serveItem(ITEM_BY_ID[id], rng));
+    else if (TEMPLATE_BY_ID[id]) out.push(serveTemplate(TEMPLATE_BY_ID[id], rng));
+    else if (GENERATOR_BY_ID[id]) out.push(serveGenerator(GENERATOR_BY_ID[id], rng, false));
+  }
+  return out;
+}
+
 /** How many of a `size`-item paper each topic gets, scaled from the 60-item blueprint. */
 export function blueprintCounts(size: number): Record<string, number> {
   const exact = TOPICS.map((t) => ({ id: t.id, x: (t.weight * size) / 60 }));
@@ -177,18 +211,47 @@ export function blueprintCounts(size: number): Record<string, number> {
   return counts;
 }
 
-/** A Paper 01-style mock: multiple choice only, topic counts fixed by the blueprint. */
-export function buildMock(size: number, seed = seedNow()): ServedQ[] {
+export type Level = 1 | 2 | 3;
+export const LEVELS: Record<Level, { name: string; note: string }> = {
+  1: { name: 'Standard', note: 'Mostly recall and one-step questions, like the easier half of Paper 01.' },
+  2: { name: 'Harder', note: 'More application and calculation questions.' },
+  3: { name: 'Hardest', note: 'Mostly multi-step calculations and questions that need you to work something out.' },
+};
+/** How strongly each test level favours questions of difficulty 1, 2 and 3. */
+const LEVEL_WEIGHT: Record<Level, [number, number, number]> = { 1: [3, 2, 0.4], 2: [1, 3, 2], 3: [0.3, 2, 4.5] };
+
+/** The level to suggest next: move up after 70% or better, down after less than 40%. */
+export function recommendedLevel(s: AppState): Level {
+  const last = s.mocks[s.mocks.length - 1];
+  if (!last) return 1;
+  const level = (last.level ?? 1) as Level;
+  const pct = last.score / last.size;
+  return (pct >= 0.7 ? Math.min(3, level + 1) : pct < 0.4 ? Math.max(1, level - 1) : level) as Level;
+}
+
+/**
+ * A Paper 01-style mock: multiple choice only, topic counts fixed by the blueprint.
+ * Every paper is different: questions are drawn at random with weights that follow the level,
+ * templates and generators write new versions each time, and `avoid` (questions from the
+ * learner's recent papers) are made much less likely to appear again.
+ */
+export function buildMock(size: number, level: Level = 1, seed = seedNow(), avoid: ReadonlySet<string> = new Set()): ServedQ[] {
   const rng = mulberry32(seed);
   const counts = blueprintCounts(size);
+  const w = LEVEL_WEIGHT[level];
   const out: ServedQ[] = [];
   for (const t of TOPICS) {
-    const authored = shuffle(ITEMS.filter((i) => i.obj.startsWith(t.id + '.')), rng).map((i) => () => serveItem(i, rng));
-    const generated = shuffle(GENERATORS.filter((g) => g.obj.startsWith(t.id + '.')), rng).map((g) => () => serveGenerator(g, rng, true));
-    // About a third of a calculation-heavy topic's questions use fresh numbers.
-    const nGen = Math.min(generated.length, Math.floor(counts[t.id] / 3));
-    const makers = [...generated.slice(0, nGen), ...authored].slice(0, counts[t.id]);
-    out.push(...shuffle(makers, rng).map((make) => make()));
+    const inTopic = (obj: string) => obj.startsWith(t.id + '.');
+    type Entry = { weight: number; make: () => ServedQ };
+    const pool: Entry[] = [
+      ...ITEMS.filter((i) => inTopic(i.obj)).map((i) => ({ weight: w[i.diff - 1] * (avoid.has(i.id) ? 0.15 : 1), make: () => serveItem(i, rng) })),
+      // A template or generator may appear twice in one paper, since each use is a different question.
+      ...TEMPLATES.filter((x) => inTopic(x.obj)).flatMap((x) => [0, 1].map((k) => ({ weight: w[x.diff - 1] * (k ? 0.5 : 1), make: () => serveTemplate(x, rng) }))),
+      ...GENERATORS.filter((g) => inTopic(g.obj)).flatMap((g) => [0, 1].map((k) => ({ weight: w[g.diff - 1] * (k ? 0.4 : 0.9), make: () => serveGenerator(g, rng, true) }))),
+    ];
+    // Weighted sampling without replacement: the largest keys win.
+    const chosen = pool.map((e) => ({ e, key: Math.pow(rng(), 1 / e.weight) })).sort((a, b) => b.key - a.key).slice(0, counts[t.id]);
+    out.push(...shuffle(chosen.map((c) => c.e), rng).map((e) => e.make()));
   }
   return out;
 }

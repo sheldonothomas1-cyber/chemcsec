@@ -4,7 +4,8 @@ import { Rich } from '../components/Rich';
 import { QuestionView, Solution } from '../components/Runner';
 import { COMMAND_WORDS, PAPER2, P2_TOTAL } from '../content/paper2';
 import { SECTIONS, TOPIC_BY_ID, topicOf } from '../content/syllabus';
-import { buildMock, MOCK_MINUTES, type ServedQ } from '../engine/session';
+import { buildMock, LEVELS, MOCK_MINUTES, recommendedLevel, type Level, type ServedQ } from '../engine/session';
+import { getState } from '../store';
 import { recordAnswers, saveMock, saveP2, useStore, type MockResult } from '../store';
 
 const pct = (a: number, b: number) => (b ? Math.round((a / b) * 100) : 0);
@@ -44,7 +45,7 @@ export function ExamHub() {
             <p className="label">Your mock results</p>
             {s.mocks.slice(-5).reverse().map((m) => (
               <div key={m.t} className="meter">
-                <span className="small muted">{dateText(m.t)}</span>
+                <span className="small muted">{dateText(m.t)}{m.level && m.level > 1 ? ` ${LEVELS[m.level as Level].name}` : ''}</span>
                 <div className="bar" style={{ ['--m' as string]: m.score / m.size }}><span /></div>
                 <span className="num">{pct(m.score, m.size)}%</span>
               </div>
@@ -72,6 +73,18 @@ export function ExamHub() {
             );
           })}
         </div>
+      </section>
+
+      <section className="stack">
+        <h2>How the real exam is set</h2>
+        <dl className="facts-list">
+          <div><dt>Paper 01</dt><dd>60 multiple-choice questions, 60 marks</dd></div>
+          <div><dt>Paper 02</dt><dd>6 compulsory questions (1 data analysis, 2 structured, 3 extended), 100 marks</dd></div>
+          <div><dt>Paper 03/1 or 03/2</dt><dd>School-based assessment, or the written alternative for private candidates</dd></div>
+        </dl>
+        <p className="small muted">
+          Mock papers here follow that shape with original questions. The best guide to real questions is CXC's own subject reports, where examiners say what each question tested and where candidates lost marks. They are free on cxc.org; past papers are sold in the CXC Store. See <Link to="/resources">Resources</Link>.
+        </p>
       </section>
 
       <section className="stack">
@@ -105,7 +118,8 @@ export function Paper1() {
 }
 
 function Paper1Run({ size }: { size: number }) {
-  const [questions] = useState<ServedQ[]>(() => buildMock(size));
+  const [level, setLevel] = useState<Level>(() => recommendedLevel(getState()));
+  const [questions, setQuestions] = useState<ServedQ[]>([]);
   const [started, setStarted] = useState(false);
   const [answers, setAnswers] = useState<(number | null)[]>(() => Array(size).fill(null));
   const [flags, setFlags] = useState<boolean[]>(() => Array(size).fill(false));
@@ -137,7 +151,7 @@ function Paper1Run({ size }: { size: number }) {
     recordAnswers(questions.map((q, k) => ({
       obj: q.obj, item: q.itemId, kind: 'mcq' as const, profile: q.profile, ok: answers[k] === q.correctIndex, ms: perQ, mode: 'mock' as const,
     })));
-    const r: MockResult = { t: Date.now(), size, score, minutes, bySection, byProfile, byTopic };
+    const r: MockResult = { t: Date.now(), size, score, minutes, bySection, byProfile, byTopic, level, items: questions.map((q) => q.itemId) };
     saveMock(r);
     setResult(r);
     window.scrollTo({ top: 0 });
@@ -165,11 +179,23 @@ function Paper1Run({ size }: { size: number }) {
           <li>No feedback until the end, just like the exam.</li>
           <li>You can flag questions and come back to them.</li>
           <li>Have a calculator and rough paper ready. The clock starts when you press the button.</li>
+          <li>Every paper is different: questions are drawn fresh each time, and ones from your last three papers are avoided.</li>
         </ul>
+        <fieldset className="stack tight" style={{ border: 0, padding: 0, margin: 0 }}>
+          <legend className="label" style={{ padding: 0, marginBottom: 6 }}>Difficulty</legend>
+          {([1, 2, 3] as Level[]).map((l) => (
+            <label key={l} className="check">
+              <input type="radio" name="mock-level" checked={level === l} onChange={() => setLevel(l)} />
+              <span><strong>{LEVELS[l].name}.</strong> {LEVELS[l].note}{l === recommendedLevel(getState()) ? ' (suggested from your last paper)' : ''}</span>
+            </label>
+          ))}
+        </fieldset>
         <div className="row">
           <button
             className="btn violet" type="button"
             onClick={() => {
+              const avoid = new Set(getState().mocks.slice(-3).flatMap((m) => m.items ?? []));
+              setQuestions(buildMock(size, level, undefined, avoid));
               startedAt.current = Date.now();
               setStarted(true);
             }}

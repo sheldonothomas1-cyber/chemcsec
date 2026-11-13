@@ -1,6 +1,8 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
+import { LessonVideos } from '../components/LessonVideos';
 import { Rich } from '../components/Rich';
+import { VISUALS } from '../visuals';
 import { TileLegend, TopicTile } from '../components/Tile';
 import { LESSON_BY_TOPIC, phetUrl } from '../content/lessons';
 import { SECTIONS, TOPICS, TOPIC_BY_ID, type SectionId } from '../content/syllabus';
@@ -173,6 +175,14 @@ export function TopicPage() {
         )}
       </section>
 
+      {VISUALS[topic.id] && (
+        <section className="stack">
+          <h2>{VISUALS[topic.id].title}</h2>
+          <div key={topic.id}>{VISUALS[topic.id].render()}</div>
+          {VISUALS[topic.id].lab && <div><Link className="btn" to={`/lab/${VISUALS[topic.id].lab!.id}`}>{VISUALS[topic.id].lab!.label}</Link></div>}
+        </section>
+      )}
+
       <section className="stack">
         <h2>Mistakes that cost marks</h2>
         <div>
@@ -199,6 +209,8 @@ export function TopicPage() {
           {lesson.key.map((k, i) => <li key={i}><Rich text={k} /></li>)}
         </ul>
       </section>
+
+      <LessonVideos topic={topic.id} />
 
       <Recall key={topic.id} topicId={topic.id} />
 

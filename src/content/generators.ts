@@ -104,6 +104,28 @@ export const REACTIONS: { eq: string; from: [string, string]; to: [string, strin
   { eq: '2Al + 3Cl2 -> 2AlCl3', from: ['aluminium', 'Al'], to: ['aluminium chloride', 'AlCl3'] },
 ];
 
+/** Reactions that give off a gas, for "what volume of gas" questions. */
+export const GAS_REACTIONS: { eq: string; from: [string, string]; gas: [string, string] }[] = [
+  { eq: 'CaCO3 + 2HCl -> CaCl2 + H2O + CO2', from: ['calcium carbonate', 'CaCO3'], gas: ['carbon dioxide', 'CO2'] },
+  { eq: 'CaCO3 -> CaO + CO2', from: ['calcium carbonate', 'CaCO3'], gas: ['carbon dioxide', 'CO2'] },
+  { eq: 'Mg + 2HCl -> MgCl2 + H2', from: ['magnesium', 'Mg'], gas: ['hydrogen', 'H2'] },
+  { eq: 'Zn + H2SO4 -> ZnSO4 + H2', from: ['zinc', 'Zn'], gas: ['hydrogen', 'H2'] },
+  { eq: '2Al + 6HCl -> 2AlCl3 + 3H2', from: ['aluminium', 'Al'], gas: ['hydrogen', 'H2'] },
+  { eq: '2H2O2 -> 2H2O + O2', from: ['hydrogen peroxide', 'H2O2'], gas: ['oxygen', 'O2'] },
+  { eq: '2KClO3 -> 2KCl + 3O2', from: ['potassium chlorate', 'KClO3'], gas: ['oxygen', 'O2'] },
+];
+
+/** Two reactants and one product, for limiting-reactant questions. */
+export const LIMITING: { eq: string; a: [string, string]; b: [string, string]; p: [string, string] }[] = [
+  { eq: '2Mg + O2 -> 2MgO', a: ['magnesium', 'Mg'], b: ['oxygen', 'O2'], p: ['magnesium oxide', 'MgO'] },
+  { eq: '2H2 + O2 -> 2H2O', a: ['hydrogen', 'H2'], b: ['oxygen', 'O2'], p: ['water', 'H2O'] },
+  { eq: 'N2 + 3H2 -> 2NH3', a: ['nitrogen', 'N2'], b: ['hydrogen', 'H2'], p: ['ammonia', 'NH3'] },
+  { eq: 'Fe + S -> FeS', a: ['iron', 'Fe'], b: ['sulfur', 'S'], p: ['iron(II) sulfide', 'FeS'] },
+  { eq: '2Al + 3Cl2 -> 2AlCl3', a: ['aluminium', 'Al'], b: ['chlorine', 'Cl2'], p: ['aluminium chloride', 'AlCl3'] },
+  { eq: 'Zn + S -> ZnS', a: ['zinc', 'Zn'], b: ['sulfur', 'S'], p: ['zinc sulfide', 'ZnS'] },
+  { eq: '2Na + Cl2 -> 2NaCl', a: ['sodium', 'Na'], b: ['chlorine', 'Cl2'], p: ['sodium chloride', 'NaCl'] },
+];
+
 /** Skeleton equations for the balancing generator; coefficients come from the solver. */
 export const SKELETONS: [string[], string[]][] = [
   [['N2', 'H2'], ['NH3']],
@@ -426,6 +448,94 @@ export const GENERATORS: Generator[] = [
         answer, unit: 'kJ',
         steps: [`q = m × c × ΔT = ${m} × 4.2 × ${dT}`, `= ${round(m * 4.2 * dT, 2)} J`, `= ${fmt(answer)} kJ (divide by 1000)`],
         distractors: wrongs(answer, [m * 4.2 * dT, (m * dT) / 1000, (4.2 * dT) / 1000 * 10, (m * 4.2) / 1000]),
+      };
+    },
+  },
+  // ---- harder, multi-step calculations (used more often at the higher test levels) ----
+  {
+    id: 'g-gdm3', obj: 'A6.2', label: 'Converting concentration units', profile: 'UK', diff: 2,
+    make(rng) {
+      const [name, f] = pick(rng, SOLUTES);
+      const c = pick(rng, [0.05, 0.1, 0.2, 0.25, 0.5, 2]);
+      const mr = molarMass(f);
+      const answer = round(c * mr, 3);
+      return {
+        stem: `A solution of ${name}, [[${f}]], has a concentration of ${c} mol dm⁻³. What is its concentration in g dm⁻³? (${arList(f)})`,
+        answer, unit: 'g dm⁻³',
+        steps: [`Formula mass of [[${f}]] = ${fmt(mr)}`, `Each dm³ holds ${c} mol, and each mole has a mass of ${fmt(mr)} g`, `Concentration = ${c} × ${fmt(mr)} = ${fmt(answer)} g dm⁻³`],
+        distractors: wrongs(answer, [mr / c, c / mr, (c * mr) / 1000, mr]),
+      };
+    },
+  },
+  {
+    id: 'g-gas-from-mass', obj: 'A6.3', label: 'Volume of gas from a reacting mass', profile: 'UK', diff: 3,
+    make(rng) {
+      const r = pick(rng, GAS_REACTIONS);
+      const ca = coefOf(r.eq, r.from[1]), cb = coefOf(r.eq, r.gas[1]);
+      const n = pick(rng, [0.05, 0.1, 0.2, 0.25, 0.5]);
+      const mrA = molarMass(r.from[1]);
+      const mass = round(n * mrA, 2);
+      const nGas = (n * cb) / ca;
+      const answer = round(nGas * 24, 3);
+      return {
+        stem: `What volume of ${r.gas[0]}, measured at room temperature and pressure, is produced when ${mass} g of ${r.from[0]} reacts completely? [[${r.eq}]] (${arList(r.from[1])}; 1 mol of gas occupies 24 dm³)`,
+        answer, unit: 'dm³',
+        steps: [
+          `Mass to moles: moles of [[${r.from[1]}]] = ${mass} ÷ ${fmt(mrA)} = ${fmt(n)} mol`,
+          `Mole ratio: ${ca} [[${r.from[1]}]] gives ${cb} [[${r.gas[1]}]], so moles of gas = ${fmt(nGas)} mol`,
+          `Moles to volume: ${fmt(nGas)} × 24 = ${fmt(answer)} dm³`,
+        ],
+        distractors: wrongs(answer, [n * 24 === answer ? n * 12 : n * 24, mass * 24, ((n * ca) / cb) * 24, nGas * 22.4, nGas]),
+      };
+    },
+  },
+  {
+    id: 'g-limiting', obj: 'A6.3', label: 'Limiting reactant', profile: 'UK', diff: 3,
+    make(rng) {
+      const r = pick(rng, LIMITING);
+      const [ca, cb, cp] = [coefOf(r.eq, r.a[1]), coefOf(r.eq, r.b[1]), coefOf(r.eq, r.p[1])];
+      const x = pick(rng, [0.05, 0.1, 0.2, 0.25]);
+      const excess = pick(rng, [1.5, 2, 3]);
+      const aLimits = rng() < 0.5;
+      const nA = x * ca * (aLimits ? 1 : excess), nB = x * cb * (aLimits ? excess : 1);
+      const [mA, mB] = [round(nA * molarMass(r.a[1]), 2), round(nB * molarMass(r.b[1]), 2)];
+      const mrP = molarMass(r.p[1]);
+      const answer = round(x * cp * mrP, 3);
+      const lim = aLimits ? r.a : r.b;
+      const els = [...new Set([r.a[1], r.b[1], r.p[1]].flatMap((f) => Object.keys(parseSpecies(f).atoms)))];
+      return {
+        stem: `${mA} g of ${r.a[0]} is mixed with ${mB} g of ${r.b[0]} and allowed to react. What is the maximum mass of ${r.p[0]} that can form? [[${r.eq}]] (${els.map((el) => `${el} = ${BY_SYMBOL[el].ar}`).join(', ')})`,
+        answer, unit: 'g',
+        steps: [
+          `Moles of [[${r.a[1]}]] = ${mA} ÷ ${fmt(molarMass(r.a[1]))} = ${fmt(nA)} mol; moles of [[${r.b[1]}]] = ${mB} ÷ ${fmt(molarMass(r.b[1]))} = ${fmt(nB)} mol`,
+          `The equation needs them in the ratio ${ca} : ${cb}. There is not enough ${lim[0]} to use up the other reactant, so ${lim[0]} is the limiting reactant.`,
+          `Moles of [[${r.p[1]}]] = ${fmt(x * cp)} mol (worked from the limiting reactant)`,
+          `Mass = ${fmt(x * cp)} × ${fmt(mrP)} = ${fmt(answer)} g`,
+        ],
+        distractors: wrongs(answer, [x * cp * excess * mrP, mA + mB, (aLimits ? nB : nA) * mrP, answer / cp]),
+      };
+    },
+  },
+  {
+    id: 'g-yield', obj: 'A6.3', label: 'Percentage yield', profile: 'UK', diff: 3,
+    make(rng) {
+      const r = pick(rng, REACTIONS);
+      const [ca, cb] = [coefOf(r.eq, r.from[1]), coefOf(r.eq, r.to[1])];
+      const n = pick(rng, [0.1, 0.2, 0.25, 0.5, 2]);
+      const p = pick(rng, [50, 60, 75, 80, 90]);
+      const mass = round(n * molarMass(r.from[1]), 2);
+      const theory = round(((n * cb) / ca) * molarMass(r.to[1]), 3);
+      const actual = round((theory * p) / 100, 3);
+      const els = [...new Set([r.from[1], r.to[1]].flatMap((f) => Object.keys(parseSpecies(f).atoms)))];
+      return {
+        stem: `${mass} g of ${r.from[0]} reacts and ${fmt(actual)} g of ${r.to[0]} is collected. Calculate the percentage yield. [[${r.eq}]] (${els.map((el) => `${el} = ${BY_SYMBOL[el].ar}`).join(', ')})`,
+        answer: p, unit: '%',
+        steps: [
+          `Moles of [[${r.from[1]}]] = ${mass} ÷ ${fmt(molarMass(r.from[1]))} = ${fmt(n)} mol, so the equation predicts ${fmt((n * cb) / ca)} mol of [[${r.to[1]}]]`,
+          `Theoretical mass = ${fmt((n * cb) / ca)} × ${fmt(molarMass(r.to[1]))} = ${fmt(theory)} g`,
+          `Percentage yield = (actual ÷ theoretical) × 100 = (${fmt(actual)} ÷ ${fmt(theory)}) × 100 = ${p}%`,
+        ],
+        distractors: wrongs(p, [100 - p, (actual / mass) * 100, (theory / mass) * 100, p / 2, p + 15]),
       };
     },
   },

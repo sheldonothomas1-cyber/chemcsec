@@ -1,0 +1,772 @@
+{
+ "_readme": "Videos chosen for each lesson. 'why' is shown to the learner. 'expect' lists words the captions must contain; pipeline/check_videos.py refuses a video that is missing, cannot be embedded, or does not cover them. Run: pipeline/.venv/Scripts/python pipeline/check_videos.py",
+ "videos": [
+  {
+   "topic": "A1",
+   "id": "hkBrw2fG75U",
+   "level": "start",
+   "why": "The particle model for solids, liquids and gases, and what happens at each change of state.",
+   "expect": [
+    "solid",
+    "liquid",
+    "gas",
+    "particles",
+    "melting"
+   ]
+  },
+  {
+   "topic": "A1",
+   "id": "xYU7RSoOZ0U",
+   "level": "deeper",
+   "why": "Changes of state in more detail, including why temperature stays constant while a substance melts or boils.",
+   "expect": [
+    "melting",
+    "boiling",
+    "energy",
+    "temperature"
+   ]
+  },
+  {
+   "topic": "A1",
+   "id": "KRLNDTmBFZY",
+   "level": "deeper",
+   "why": "Diffusion of gases as evidence that particles move, including the ammonia and hydrogen chloride experiment.",
+   "expect": [
+    "diffusion",
+    "particles",
+    "gas"
+   ]
+  },
+  {
+   "topic": "A2",
+   "id": "29Rd-Lly-fw",
+   "level": "start",
+   "why": "Filtration, evaporation and crystallisation: which to use and how each is carried out.",
+   "expect": [
+    "filtration",
+    "evaporation",
+    "crystallisation"
+   ]
+  },
+  {
+   "topic": "A2",
+   "id": "wFZrm7CAg0M",
+   "level": "deeper",
+   "why": "Simple and fractional distillation, with the apparatus explained step by step.",
+   "expect": [
+    "distillation",
+    "boiling point",
+    "condenser"
+   ]
+  },
+  {
+   "topic": "A2",
+   "id": "TdJ57SQ6GAQ",
+   "level": "deeper",
+   "why": "Paper chromatography and how to calculate Rf values.",
+   "expect": [
+    "chromatography",
+    "solvent",
+    "rf"
+   ]
+  },
+  {
+   "topic": "A3",
+   "id": "zuQ469vjwgo",
+   "level": "start",
+   "why": "Protons, neutrons and electrons, and how atoms become ions.",
+   "expect": [
+    "proton",
+    "neutron",
+    "electron",
+    "ion"
+   ]
+  },
+  {
+   "topic": "A3",
+   "id": "hSkJzE2Vz_w",
+   "level": "start",
+   "why": "How to draw electron arrangements shell by shell.",
+   "expect": [
+    "electron",
+    "shell"
+   ]
+  },
+  {
+   "topic": "A3",
+   "id": "EboWeWmh5Pg",
+   "level": "deeper",
+   "why": "What isotopes are, explained slowly with plenty of examples.",
+   "expect": [
+    "isotope",
+    "neutron",
+    "mass number"
+   ]
+  },
+  {
+   "topic": "A3",
+   "id": "ULRsJYhQmlo",
+   "level": "practice",
+   "why": "Worked examples of calculating relative atomic mass from isotope abundances.",
+   "expect": [
+    "atomic mass",
+    "isotope",
+    "percent"
+   ]
+  },
+  {
+   "topic": "A4",
+   "id": "7mLPC74GHMo",
+   "level": "start",
+   "why": "What periods and groups are and how they relate to electron arrangement.",
+   "expect": [
+    "period",
+    "group",
+    "electron"
+   ]
+  },
+  {
+   "topic": "A4",
+   "id": "TGZs93DzMDY",
+   "level": "deeper",
+   "why": "Group I metals: properties, reactions with water and why reactivity increases down the group.",
+   "expect": [
+    "alkali metal",
+    "reactiv",
+    "electron"
+   ]
+  },
+  {
+   "topic": "A4",
+   "id": "uYubwlPRdCs",
+   "level": "deeper",
+   "why": "The halogens and noble gases: trends down the group and displacement reactions.",
+   "expect": [
+    "halogen",
+    "reactiv",
+    "noble"
+   ]
+  },
+  {
+   "topic": "A4",
+   "id": "kFKIDexEsps",
+   "level": "csec",
+   "why": "A full CSEC lesson on the periodic table and periodicity from a Caribbean teacher.",
+   "expect": [
+    "period",
+    "group"
+   ]
+  },
+  {
+   "topic": "A5",
+   "id": "Qf07-8Jhhpc",
+   "level": "start",
+   "why": "Ionic bonding from the very beginning: why atoms transfer electrons and how ions attract.",
+   "expect": [
+    "ionic",
+    "electron",
+    "ion"
+   ]
+  },
+  {
+   "topic": "A5",
+   "id": "7IkYm7ZgiAw",
+   "level": "start",
+   "why": "Covalent bonding and how to draw dot-and-cross diagrams.",
+   "expect": [
+    "covalent",
+    "shar",
+    "electron"
+   ]
+  },
+  {
+   "topic": "A5",
+   "id": "tRKkGRBndto",
+   "level": "deeper",
+   "why": "Metallic bonding and how it explains the properties of metals and alloys.",
+   "expect": [
+    "metallic",
+    "delocalised",
+    "alloy"
+   ]
+  },
+  {
+   "topic": "A5",
+   "id": "SxuldWdqFB0",
+   "level": "deeper",
+   "why": "Simple molecular and giant covalent structures, including diamond and graphite.",
+   "expect": [
+    "covalent",
+    "diamond",
+    "graphite"
+   ]
+  },
+  {
+   "topic": "A6",
+   "id": "wI56mHUDJgQ",
+   "level": "start",
+   "why": "What a mole actually is, built up patiently from counting everyday objects.",
+   "expect": [
+    "mole",
+    "atoms"
+   ]
+  },
+  {
+   "topic": "A6",
+   "id": "CMnkSb2YsXI",
+   "level": "practice",
+   "why": "Converting between grams and moles, with every step of the working shown.",
+   "expect": [
+    "grams",
+    "moles",
+    "molar mass"
+   ]
+  },
+  {
+   "topic": "A6",
+   "id": "MEQ1YGxfAQ4",
+   "level": "deeper",
+   "why": "Moles in solutions: linking moles, concentration and volume.",
+   "expect": [
+    "moles",
+    "concentration",
+    "volume"
+   ]
+  },
+  {
+   "topic": "A6",
+   "id": "TV6n5MFH6IU",
+   "level": "practice",
+   "why": "Reacting-mass calculations from a balanced equation.",
+   "expect": [
+    "mass",
+    "moles",
+    "equation"
+   ]
+  },
+  {
+   "topic": "A7",
+   "id": "ckbsHM2igT0",
+   "level": "start",
+   "why": "The pH scale and what it tells you about acids and alkalis.",
+   "expect": [
+    "ph",
+    "acid",
+    "alkali"
+   ]
+  },
+  {
+   "topic": "A7",
+   "id": "lpM_VCMPFug",
+   "level": "deeper",
+   "why": "Preparing a soluble salt from an acid and an insoluble base.",
+   "expect": [
+    "salt",
+    "acid",
+    "soluble"
+   ]
+  },
+  {
+   "topic": "A7",
+   "id": "ql0Sm31MUdA",
+   "level": "deeper",
+   "why": "Preparing an insoluble salt by precipitation.",
+   "expect": [
+    "insoluble",
+    "precipitat",
+    "salt"
+   ]
+  },
+  {
+   "topic": "A7",
+   "id": "ovx-Sro4NXM",
+   "level": "practice",
+   "why": "How to set out a titration calculation.",
+   "expect": [
+    "titration",
+    "moles",
+    "concentration"
+   ]
+  },
+  {
+   "topic": "A8",
+   "id": "5rtJdjas-mY",
+   "level": "start",
+   "why": "Oxidation and reduction as loss and gain of electrons, explained from scratch.",
+   "expect": [
+    "oxidation",
+    "reduction",
+    "electron"
+   ]
+  },
+  {
+   "topic": "A8",
+   "id": "-a2ckxhfDjQ",
+   "level": "deeper",
+   "why": "The rules for working out oxidation numbers.",
+   "expect": [
+    "oxidation number",
+    "charge"
+   ]
+  },
+  {
+   "topic": "A8",
+   "id": "gnbuTl2ariI",
+   "level": "practice",
+   "why": "A short recap of oxidation and reduction in terms of electrons, with half-equations.",
+   "expect": [
+    "oxidation",
+    "reduction",
+    "electron"
+   ]
+  },
+  {
+   "topic": "A9",
+   "id": "7uIIq_Ofzgw",
+   "level": "start",
+   "why": "What electrolysis is and why ionic compounds must be molten or dissolved.",
+   "expect": [
+    "electrolysis",
+    "ion",
+    "electrode"
+   ]
+  },
+  {
+   "topic": "A9",
+   "id": "RAEm-kJ_QkU",
+   "level": "deeper",
+   "why": "Electrolysis of molten compounds, with the half-equations at each electrode.",
+   "expect": [
+    "molten",
+    "cathode",
+    "anode"
+   ]
+  },
+  {
+   "topic": "A9",
+   "id": "me19WmGg8Dw",
+   "level": "deeper",
+   "why": "Electrolysis of aqueous solutions: how to predict which ion is discharged.",
+   "expect": [
+    "aqueous",
+    "hydrogen",
+    "cathode",
+    "anode"
+   ]
+  },
+  {
+   "topic": "A9",
+   "id": "2dOJH8ah31U",
+   "level": "csec",
+   "why": "A full CSEC lesson on electrolysis from a Caribbean teacher.",
+   "expect": [
+    "electrolysis",
+    "cathode",
+    "anode"
+   ]
+  },
+  {
+   "topic": "A9",
+   "id": "C13AEtOUUpw",
+   "level": "csec",
+   "why": "CSEC-style electrolysis calculations using the Faraday constant.",
+   "expect": [
+    "faraday",
+    "coulomb",
+    "mole"
+   ]
+  },
+  {
+   "topic": "A10",
+   "id": "JK7yPzO9POU",
+   "level": "start",
+   "why": "Collision theory and the factors that change the rate of a reaction.",
+   "expect": [
+    "collision",
+    "rate",
+    "temperature",
+    "surface area"
+   ]
+  },
+  {
+   "topic": "A10",
+   "id": "HaQm4pNMZug",
+   "level": "deeper",
+   "why": "How rate is measured in experiments and how to read rate graphs.",
+   "expect": [
+    "rate",
+    "graph",
+    "gas"
+   ]
+  },
+  {
+   "topic": "A10",
+   "id": "5rC6f_P_A48",
+   "level": "deeper",
+   "why": "Reversible reactions and what dynamic equilibrium means.",
+   "expect": [
+    "reversible",
+    "equilibrium"
+   ]
+  },
+  {
+   "topic": "A10",
+   "id": "KZPO23kia_o",
+   "level": "deeper",
+   "why": "Le Chatelier's principle: how temperature, pressure and concentration shift an equilibrium.",
+   "expect": [
+    "equilibrium",
+    "pressure",
+    "temperature"
+   ]
+  },
+  {
+   "topic": "A11",
+   "id": "eJXL0IrbtqE",
+   "level": "start",
+   "why": "Exothermic and endothermic reactions with everyday examples.",
+   "expect": [
+    "exothermic",
+    "endothermic",
+    "energy"
+   ]
+  },
+  {
+   "topic": "A11",
+   "id": "hNNvIsQLSV8",
+   "level": "deeper",
+   "why": "Reaction profile diagrams and activation energy.",
+   "expect": [
+    "exothermic",
+    "endothermic",
+    "activation energy"
+   ]
+  },
+  {
+   "topic": "A11",
+   "id": "CegXaqWMyr4",
+   "level": "deeper",
+   "why": "Bond breaking and bond making: where the energy change comes from.",
+   "expect": [
+    "bond",
+    "energy",
+    "break"
+   ]
+  },
+  {
+   "topic": "A11",
+   "id": "yhNHJ7WdT8A",
+   "level": "practice",
+   "why": "Specific heat capacity and calorimetry calculations.",
+   "expect": [
+    "specific heat",
+    "calorimet",
+    "temperature"
+   ]
+  },
+  {
+   "topic": "B1",
+   "id": "2ATXC_weN7s",
+   "level": "start",
+   "why": "Hydrocarbons, alkanes and what a homologous series is.",
+   "expect": [
+    "hydrocarbon",
+    "alkane",
+    "homologous"
+   ]
+  },
+  {
+   "topic": "B1",
+   "id": "Sfm3eHe57PU",
+   "level": "start",
+   "why": "How alkanes and alkenes differ in structure and reactions.",
+   "expect": [
+    "alkane",
+    "alkene",
+    "double bond"
+   ]
+  },
+  {
+   "topic": "B1",
+   "id": "NgzFok_BA_0",
+   "level": "deeper",
+   "why": "Structural isomers: same formula, different arrangement.",
+   "expect": [
+    "isomer",
+    "formula"
+   ]
+  },
+  {
+   "topic": "B1",
+   "id": "83Is-rouV-U",
+   "level": "deeper",
+   "why": "Addition reactions of alkenes with hydrogen, water and halogens.",
+   "expect": [
+    "alkene",
+    "addition",
+    "bromine"
+   ]
+  },
+  {
+   "topic": "B2",
+   "id": "vVwLa1fRsVY",
+   "level": "start",
+   "why": "Alcohols: the functional group, the first four members and their reactions.",
+   "expect": [
+    "alcohol",
+    "ethanol",
+    "functional group"
+   ]
+  },
+  {
+   "topic": "B2",
+   "id": "ZkX9rVtCa7c",
+   "level": "deeper",
+   "why": "Making ethanol by fermentation and from ethene, compared.",
+   "expect": [
+    "fermentation",
+    "ethanol",
+    "yeast"
+   ]
+  },
+  {
+   "topic": "B2",
+   "id": "ED9EU3FfzyU",
+   "level": "deeper",
+   "why": "Carboxylic acids and why they are weak acids.",
+   "expect": [
+    "carboxylic acid",
+    "weak"
+   ]
+  },
+  {
+   "topic": "B2",
+   "id": "cYgRd4rXY6I",
+   "level": "deeper",
+   "why": "How esters are made from an acid and an alcohol.",
+   "expect": [
+    "ester",
+    "alcohol",
+    "acid"
+   ]
+  },
+  {
+   "topic": "B2",
+   "id": "KO2rDlXWni0",
+   "level": "csec",
+   "why": "A full CSEC lesson on alcohols from a Caribbean teacher.",
+   "expect": [
+    "alcohol",
+    "ethanol"
+   ]
+  },
+  {
+   "topic": "B3",
+   "id": "CjmriZq5xRo",
+   "level": "start",
+   "why": "Crude oil and how fractional distillation separates it.",
+   "expect": [
+    "crude oil",
+    "fraction",
+    "boiling point"
+   ]
+  },
+  {
+   "topic": "B3",
+   "id": "bOiYLKX9ZRY",
+   "level": "deeper",
+   "why": "Cracking: why and how long hydrocarbons are broken into shorter ones.",
+   "expect": [
+    "cracking",
+    "alkene",
+    "alkane"
+   ]
+  },
+  {
+   "topic": "B3",
+   "id": "1ZUg6ZC3ltA",
+   "level": "deeper",
+   "why": "Addition polymers and how to draw the repeating unit.",
+   "expect": [
+    "polymer",
+    "monomer",
+    "addition"
+   ]
+  },
+  {
+   "topic": "B3",
+   "id": "U-eCXeFwTgY",
+   "level": "deeper",
+   "why": "Condensation polymers such as polyesters.",
+   "expect": [
+    "condensation",
+    "polymer",
+    "water"
+   ]
+  },
+  {
+   "topic": "C1",
+   "id": "TGPPPFczOj0",
+   "level": "start",
+   "why": "The reactivity series and how it is worked out.",
+   "expect": [
+    "reactivity series",
+    "metal"
+   ]
+  },
+  {
+   "topic": "C1",
+   "id": "NBw5s7cuwMc",
+   "level": "deeper",
+   "why": "Metals with water and acids, and displacement reactions.",
+   "expect": [
+    "reactivity",
+    "displace",
+    "acid"
+   ]
+  },
+  {
+   "topic": "C1",
+   "id": "sX-uzr8xhWY",
+   "level": "deeper",
+   "why": "How different metals react with water and steam.",
+   "expect": [
+    "metal",
+    "water",
+    "hydrogen"
+   ]
+  },
+  {
+   "topic": "C1",
+   "id": "0TBnrIbaZ64",
+   "level": "csec",
+   "why": "A CSEC lesson on metals and their properties from a Caribbean teacher.",
+   "expect": [
+    "metal"
+   ]
+  },
+  {
+   "topic": "C2",
+   "id": "lvEJiiUkrWg",
+   "level": "start",
+   "why": "How the reactivity series decides the way a metal is extracted.",
+   "expect": [
+    "extract",
+    "carbon",
+    "reduc"
+   ]
+  },
+  {
+   "topic": "C2",
+   "id": "YcyMElBEzAY",
+   "level": "deeper",
+   "why": "Extracting aluminium by electrolysis, including the role of cryolite.",
+   "expect": [
+    "aluminium",
+    "cryolite",
+    "electrolysis"
+   ]
+  },
+  {
+   "topic": "C2",
+   "id": "q0CAfXV-YdY",
+   "level": "deeper",
+   "why": "Corrosion and rusting, and the ways of preventing it.",
+   "expect": [
+    "rust",
+    "corrosion",
+    "oxygen"
+   ]
+  },
+  {
+   "topic": "C2",
+   "id": "5uGmXMzM0cE",
+   "level": "csec",
+   "why": "A full CSEC lesson on extracting aluminium and iron from a Caribbean teacher.",
+   "expect": [
+    "extraction",
+    "iron",
+    "alumin"
+   ]
+  },
+  {
+   "topic": "C3",
+   "id": "1_HoWz5Kxfk",
+   "level": "start",
+   "why": "The Haber process and why its conditions are a compromise.",
+   "expect": [
+    "haber",
+    "ammonia",
+    "nitrogen",
+    "pressure"
+   ]
+  },
+  {
+   "topic": "C3",
+   "id": "xjLUJ-7m5v8",
+   "level": "deeper",
+   "why": "How sulfuric acid is manufactured by the Contact process.",
+   "expect": [
+    "sulfur",
+    "acid",
+    "catalyst"
+   ]
+  },
+  {
+   "topic": "C3",
+   "id": "sawiD_gwU7Q",
+   "level": "deeper",
+   "why": "How gases are collected and identified in the laboratory.",
+   "expect": [
+    "gas",
+    "collect"
+   ]
+  },
+  {
+   "topic": "C3",
+   "id": "grsrnXgpH7M",
+   "level": "csec",
+   "why": "A CSEC lesson on preparing gases in the laboratory from a Caribbean teacher.",
+   "expect": [
+    "gas",
+    "prepar"
+   ]
+  },
+  {
+   "topic": "C4",
+   "id": "dBvpd9RhX8E",
+   "level": "start",
+   "why": "Identifying metal ions from the colour of their hydroxide precipitates.",
+   "expect": [
+    "precipitate",
+    "sodium hydroxide",
+    "copper"
+   ]
+  },
+  {
+   "topic": "C4",
+   "id": "mWTgHjdea4Y",
+   "level": "start",
+   "why": "Tests for carbonate, sulfate and halide ions.",
+   "expect": [
+    "carbonate",
+    "sulfate",
+    "halide",
+    "precipitate"
+   ]
+  },
+  {
+   "topic": "C4",
+   "id": "_GqBl83Koig",
+   "level": "deeper",
+   "why": "The laboratory tests for hydrogen, oxygen, carbon dioxide, ammonia and chlorine.",
+   "expect": [
+    "hydrogen",
+    "oxygen",
+    "carbon dioxide",
+    "ammonia",
+    "chlorine"
+   ]
+  }
+ ]
+}

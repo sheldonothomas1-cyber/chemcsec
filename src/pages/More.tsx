@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Rich, chemHtml } from '../components/Rich';
 import { balanceText, isBalanced } from '../chem/balance';
-import { ELEMENTS, shells, type Element } from '../chem/elements';
 import { massBreakdown, molarMass, round } from '../chem/formula';
 import { RESOURCES, SBA_SKELETON, SBA_SKILLS } from '../content/extras';
 import { fmt } from '../content/generators';
@@ -14,7 +13,10 @@ import { exportData, importData, resetAll, setProfile, toggleSba, useStore } fro
 
 export function MoreMenu() {
   const items = [
-    ['/tools', 'Calculators and periodic table', 'Formula mass, equation balancer and element data'],
+    ['/lab', 'Virtual lab', 'Mock experiments: combine elements, test metals and ions, run electrolysis, rates and titrations'],
+    ['/periodic-table', 'Periodic table', 'All 118 elements with shells, properties and trends'],
+    ['/reference', 'Quick reference', 'Ions, solubility rules, reactivity series and every test on one page'],
+    ['/tools', 'Calculators', 'Formula mass and equation balancer'],
     ['/tutor', 'AI tutor', 'Ask questions and get checked, with calculations done by the app. Free with Gemini; needs internet'],
     ['/help', 'Search the lessons', 'Find the idea you are stuck on, offline'],
     ['/sba', 'SBA and practical skills', 'Checklists for the four skills and a lab report outline'],
@@ -124,57 +126,6 @@ function Balancer() {
   );
 }
 
-function PeriodicTable() {
-  const [sel, setSel] = useState<Element>(ELEMENTS[5]);
-  const grid = ELEMENTS.filter((e) => e.group > 0);
-  const extra = ELEMENTS.filter((e) => e.group === 0);
-  const sh = shells(sel.z);
-  return (
-    <section className="stack">
-      <h2>Periodic table</h2>
-      <p className="muted small">The first four periods, plus heavier elements that appear in CSEC questions. Tap an element.</p>
-      <div className="scroll-x">
-        <div className="ptable">
-          {grid.map((e) => (
-            <button
-              key={e.z} type="button" className={`el ${e.kind} ${sel.z === e.z ? 'on' : ''}`}
-              style={{ gridColumn: e.group, gridRow: e.period }} onClick={() => setSel(e)} aria-label={e.name}
-            >
-              <span><small>{e.z}</small>{e.sym}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="row">
-        {extra.map((e) => (
-          <button key={e.z} type="button" className={`el ${e.kind} ${sel.z === e.z ? 'on' : ''}`} style={{ width: 46 }} onClick={() => setSel(e)} aria-label={e.name}>
-            <span><small>{e.z}</small>{e.sym}</span>
-          </button>
-        ))}
-      </div>
-      <div className="sheet flat" aria-live="polite">
-        <h3>{sel.name} ({sel.sym})</h3>
-        <p>
-          Atomic number {sel.z}. Relative atomic mass {sel.ar}. {sel.kind === 'noble' ? 'Noble gas' : sel.kind === 'nonmetal' ? 'Non-metal' : sel.kind === 'metalloid' ? 'Metalloid' : 'Metal'}
-          {sel.group > 0 ? `, Group ${groupName(sel.group)}, Period ${sel.period}` : ''}.
-          {sh ? ` Electron arrangement ${sh.join(',')}.` : ''}
-        </p>
-      </div>
-      <div className="legend">
-        <span><i style={{ background: 'var(--blue-soft)' }} />Metal</span>
-        <span><i style={{ background: 'var(--green-soft)' }} />Metalloid</span>
-        <span><i style={{ background: 'var(--orange-soft)' }} />Non-metal</span>
-        <span><i style={{ background: 'var(--violet-soft)' }} />Noble gas</span>
-      </div>
-    </section>
-  );
-}
-
-function groupName(g: number): string {
-  const main: Record<number, string> = { 1: 'I', 2: 'II', 13: 'III', 14: 'IV', 15: 'V', 16: 'VI', 17: 'VII', 18: '0' };
-  return main[g] ?? `${g} (transition metal)`;
-}
-
 export function Tools() {
   return (
     <div className="page">
@@ -184,7 +135,11 @@ export function Tools() {
       </header>
       <MolarMass />
       <Balancer />
-      <PeriodicTable />
+      <section className="stack tight">
+        <h2>Periodic table</h2>
+        <p className="muted">All 118 elements, with shells, properties and trends.</p>
+        <div><Link className="btn" to="/periodic-table">Open the periodic table</Link></div>
+      </section>
     </div>
   );
 }

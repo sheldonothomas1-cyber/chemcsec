@@ -18,6 +18,10 @@ export interface MockResult {
   t: number;
   size: number;
   score: number;
+  /** Difficulty level 1-3 (older results have none and count as 1). */
+  level?: number;
+  /** Question ids used, so the next papers can avoid repeating them. */
+  items?: string[];
   minutes: number;
   bySection: Record<string, [right: number, total: number]>;
   byProfile: Record<string, [right: number, total: number]>;
