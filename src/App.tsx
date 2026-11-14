@@ -1,8 +1,10 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { ExamHub, FocusPaper, Paper1, Paper2 } from './pages/Exam';
 import { LearnMap, TopicPage } from './pages/Learn';
-import { Help, Install, MoreMenu, Resources, Sba, Settings, Tools } from './pages/More';
+import { Install, MoreMenu, Resources, Sba, Settings, Tools } from './pages/More';
+import { Paper3Hub } from './pages/Paper3';
+import { Search } from './pages/Search';
 import { PracticeHub, PracticeRun } from './pages/Practice';
 import { Progress } from './pages/Progress';
 import { FocusHub, FocusPage } from './pages/Focus';
@@ -45,9 +47,19 @@ const EXTRA = [
   { to: '/reference', label: 'Quick reference', icon: ICONS.exam },
   { to: '/tools', label: 'Calculators', icon: ICONS.tools },
   { to: '/tutor', label: 'AI tutor', icon: ICONS.help },
-  { to: '/help', label: 'Search lessons', icon: ICONS.search },
   { to: '/more', label: 'More', icon: ICONS.more },
 ];
+
+/** Looks like a search field; opens the search page, where the real field is. */
+function SearchPill({ className = '' }: { className?: string }) {
+  return (
+    <Link to="/search" className={`search-pill ${className}`} aria-label="Search ChemCSEC">
+      {ICONS.search}
+      <span>Search</span>
+      <kbd className="hide-touch">/</kbd>
+    </Link>
+  );
+}
 
 function Brand({ className = '' }: { className?: string }) {
   return (
@@ -58,19 +70,41 @@ function Brand({ className = '' }: { className?: string }) {
 }
 
 export function App() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+  const navigate = useNavigate();
   useEffect(() => {
+    // A link with #section (from search) scrolls to that section; anything else starts at the top.
+    // The short wait lets the new page render before looking for the section.
+    if (hash.length > 1) {
+      const t = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' }), 60);
+      return () => clearTimeout(t);
+    }
     window.scrollTo({ top: 0 });
-  }, [pathname]);
+  }, [pathname, hash]);
+  // "/" or Ctrl+K anywhere (outside a text field) opens search.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement;
+      if (el.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (e.key === '/' || (e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey))) {
+        e.preventDefault();
+        navigate('/search');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [navigate]);
 
   return (
     <div className="shell">
       <header className="topbar">
         <Brand />
+        <SearchPill />
         <Link to="/more" className="btn quiet" aria-label="More: calculators, help, resources and settings">Menu</Link>
       </header>
       <nav className="nav" aria-label="Main">
         <Brand className="nav-brand" />
+        <SearchPill className="nav-search" />
         {MAIN.map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end} className={({ isActive }) => (isActive ? 'active' : '')}>
             {n.icon}
@@ -95,11 +129,14 @@ export function App() {
           <Route path="/exam" element={<ExamHub />} />
           <Route path="/exam/paper1/:size" element={<Paper1 />} />
           <Route path="/exam/paper2/:id" element={<Paper2 />} />
+          <Route path="/exam/paper3" element={<Paper3Hub />} />
+          <Route path="/exam/paper3/:id" element={<Paper2 />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/more" element={<MoreMenu />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/tutor" element={<Suspense fallback={<div className="page"><p className="muted">Loading the tutor…</p></div>}><Tutor /></Suspense>} />
-          <Route path="/help" element={<Help />} />
+          <Route path="/help" element={<Search />} />
+          <Route path="/search" element={<Search />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/sba" element={<Sba />} />
           <Route path="/install" element={<Install />} />

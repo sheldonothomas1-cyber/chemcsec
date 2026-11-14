@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Rich, chemHtml } from '../components/Rich';
+import { chemHtml } from '../components/Rich';
 import { balanceText, isBalanced } from '../chem/balance';
 import { massBreakdown, molarMass, round } from '../chem/formula';
 import { RESOURCES, SBA_SKELETON, SBA_SKILLS } from '../content/extras';
@@ -8,7 +8,6 @@ import { fmt } from '../content/generators';
 import { TOPIC_BY_ID } from '../content/syllabus';
 import { InstallSteps } from '../components/InstallCard';
 import { APK_URL, isNativeApp, PRIVACY_URL, SITE_URL, useApkAvailable } from '../install';
-import { search } from '../tutor/retrieve';
 import { exportData, importData, resetAll, setProfile, toggleSba, useStore } from '../store';
 
 export function MoreMenu() {
@@ -19,7 +18,8 @@ export function MoreMenu() {
     ['/reference', 'Quick reference', 'Ions, solubility rules, reactivity series and every test on one page'],
     ['/tools', 'Calculators', 'Formula mass and equation balancer'],
     ['/tutor', 'AI tutor', 'Ask questions and get checked, with calculations done by the app. Free with Gemini; needs internet'],
-    ['/help', 'Search the lessons', 'Find the idea you are stuck on, offline'],
+    ['/search', 'Search', 'Find any topic, element, experiment or question, offline'],
+    ['/exam/paper3', 'Paper 03: practical skills', 'SBA and Paper 03/2 practice, scale reading, planning and design'],
     ['/sba', 'SBA and practical skills', 'Checklists for the four skills and a lab report outline'],
     ['/resources', 'Resources', 'Official CXC material, open textbooks, simulations and video'],
     ['/install', 'Install on your phone', 'One-tap install, the Android APK, and how to share the app'],
@@ -146,45 +146,6 @@ export function Tools() {
 }
 
 // ---------- help search ----------
-export function Help() {
-  const [query, setQuery] = useState('');
-  const results = useMemo(() => search(query), [query]);
-  const ideas = ['strong or concentrated acid', 'mole ratio', 'anode and cathode', 'equilibrium', 'isotopes', 'catalyst', 'white precipitate', 'bond breaking'];
-  return (
-    <div className="page">
-      <header className="stack tight">
-        <h1>Search the lessons</h1>
-        <p className="muted">Type the idea that is confusing you. This searches every lesson on your device, so it works offline.</p>
-      </header>
-      <div className="field">
-        <label htmlFor="help-q">What are you stuck on?</label>
-        <input id="help-q" className="input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="e.g. why does graphite conduct" />
-      </div>
-      {!query && (
-        <div className="row">
-          {ideas.map((x) => <button key={x} type="button" className="btn" style={{ minHeight: 40, padding: '0 14px' }} onClick={() => setQuery(x)}>{x}</button>)}
-        </div>
-      )}
-      {query && results.length === 0 && <p className="muted">Nothing matched. Try one or two key words, such as "electrolysis" or "titration".</p>}
-      <div className="stack">
-        {results.map((e, i) => (
-          <div key={i} className="sheet flat stack tight">
-            <div className="row">
-              <span className="chip">{e.kind}</span>
-              <Link to={`/learn/${e.topic}`} className="small">{TOPIC_BY_ID[e.topic].name}</Link>
-            </div>
-            <p className="label"><Rich text={e.title} /></p>
-            <p><Rich text={e.body} /></p>
-          </div>
-        ))}
-      </div>
-      <p className="small muted">
-        Want a conversation instead? The <Link to="/tutor">AI tutor</Link> explains and then checks you understood. It needs an internet connection and a key, which is free for Gemini.
-      </p>
-    </div>
-  );
-}
-
 // ---------- resources ----------
 interface Harvested {
   topic: string;

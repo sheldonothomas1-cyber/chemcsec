@@ -391,3 +391,25 @@ circle.bubble.tall { animation-name: rise-tall; animation-duration: 2.2s; }
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
 .report-reply { justify-self: start; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- search ---------- */
+.search-pill {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
+  border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface);
+  color: var(--muted); text-decoration: none; font-size: 0.95rem; flex: 1; max-width: 220px; margin: 0 10px;
+}
+.search-pill:hover { border-color: var(--muted); }
+.search-pill svg { width: 18px; height: 18px; flex: none; }
+.search-pill kbd { margin-left: auto; font: inherit; font-size: 0.78rem; border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; }
+.nav .search-pill.nav-search { display: none; }
+@media (min-width: 960px) {
+  .nav .search-pill.nav-search { display: flex; flex-direction: row; justify-content: flex-start; max-width: none; margin: 0 0 12px; min-height: 42px; font-size: 0.95rem; }
+}
+@media (hover: none) { .hide-touch { display: none; } }
+.search-input { font-size: 1.1rem; min-height: 54px; }
+
+/* ---------- paper 03 ---------- */
+.scale-row { display: grid; gap: 16px; align-items: start; }
+@media (min-width: 560px) { .scale-row { grid-template-columns: 220px 1fr; } }
+.scale-drawing { justify-self: center; max-width: 100%; height: auto; }
+details.sheet > summary { cursor: pointer; list-style-position: outside; }

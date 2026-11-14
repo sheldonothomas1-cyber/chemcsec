@@ -1,6 +1,7 @@
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ShellDiagram } from '../components/ShellDiagram';
-import { ALL_ELEMENTS, CATEGORIES, CSEC_NOTES, groupLabel, PROPERTIES, simpleIon, toC, type El } from '../data/periodic';
+import { ALL_ELEMENTS, CATEGORIES, CSEC_NOTES, EL_BY_SYMBOL, groupLabel, PROPERTIES, simpleIon, toC, type El } from '../data/periodic';
 
 type ColourBy = 'category' | 'state' | string;
 
@@ -65,7 +66,7 @@ function Detail({ e, trend, setTrend }: { e: El; trend: string; setTrend: (id: s
     ['Discovered', e.year ?? 'Not known'],
   ];
   return (
-    <section className="sheet stack" aria-live="polite">
+    <section className="sheet stack" aria-live="polite" id="element-detail">
       <div className="el-head">
         <div className={`pt-cell big cat-${cat.cls}`}>
           <small>{e.z}</small>
@@ -119,7 +120,17 @@ function Detail({ e, trend, setTrend }: { e: El; trend: string; setTrend: (id: s
 }
 
 export function PeriodicTable() {
-  const [selected, setSelected] = useState<El>(ALL_ELEMENTS[10]);
+  // ?el=Na opens the table on that element (used by search).
+  const [params] = useSearchParams();
+  const wanted = params.get('el');
+  const [selected, setSelected] = useState<El>(() => EL_BY_SYMBOL[wanted ?? ''] ?? ALL_ELEMENTS[10]);
+  useEffect(() => {
+    const e = wanted ? EL_BY_SYMBOL[wanted] : undefined;
+    if (!e) return;
+    setSelected(e);
+    const t = setTimeout(() => document.getElementById('element-detail')?.scrollIntoView({ block: 'start' }), 50);
+    return () => clearTimeout(t);
+  }, [wanted]);
   const [colourBy, setColourBy] = useState<ColourBy>('category');
   const [query, setQuery] = useState('');
   const [trend, setTrend] = useState('radius');

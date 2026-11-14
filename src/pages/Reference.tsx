@@ -13,7 +13,7 @@ export function Reference() {
         <p className="muted">The facts you need at your fingertips. Built from the same data the lab and the questions use.</p>
       </header>
 
-      <section className="stack">
+      <section className="stack" id="ions">
         <h2>Common ions</h2>
         <div className="scroll-x">
           <table className="data">
@@ -31,7 +31,7 @@ export function Reference() {
         <p className="small muted"><Rich text="To write a formula, take enough of each ion for the charges to cancel: [[Al^3+]] and [[SO4^2-]] give [[Al2(SO4)3]]." /></p>
       </section>
 
-      <section className="stack">
+      <section className="stack" id="solubility">
         <h2>Solubility rules</h2>
         <div>
           {SOLUBILITY_RULES.map(([rule, ex]) => (
@@ -40,13 +40,13 @@ export function Reference() {
         </div>
       </section>
 
-      <section className="stack">
+      <section className="stack" id="reactivity-series">
         <h2>Reactivity series</h2>
         <SeriesLadder />
         <p className="small muted">Above carbon: extracted by electrolysis. Below carbon: reduced with carbon. Above hydrogen: react with dilute acids to give hydrogen.</p>
       </section>
 
-      <section className="stack">
+      <section className="stack" id="cation-tests">
         <h2>Tests for cations</h2>
         <div className="scroll-x">
           <table className="data">
@@ -65,7 +65,7 @@ export function Reference() {
         <p className="small muted">Aluminium and lead(II) look the same with both alkalis; potassium iodide gives a yellow precipitate only with lead(II).</p>
       </section>
 
-      <section className="stack">
+      <section className="stack" id="anion-tests">
         <h2>Tests for anions</h2>
         <div className="scroll-x">
           <table className="data">
@@ -80,7 +80,7 @@ export function Reference() {
         </div>
       </section>
 
-      <section className="stack">
+      <section className="stack" id="gas-tests">
         <h2>Tests for gases</h2>
         <div className="scroll-x">
           <table className="data">
@@ -90,7 +90,7 @@ export function Reference() {
         </div>
       </section>
 
-      <section className="stack">
+      <section className="stack" id="numbers">
         <h2>Numbers to know</h2>
         <dl className="facts-list">
           <div><dt>One mole of particles</dt><dd>6.0 × 10²³</dd></div>

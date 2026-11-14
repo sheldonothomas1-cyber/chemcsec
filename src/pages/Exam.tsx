@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Rich } from '../components/Rich';
 import { QuestionView, Solution } from '../components/Runner';
 import { COMMAND_WORDS, PAPER2, P2_TOTAL } from '../content/paper2';
+import { PAPER3, P3_SKILLS } from '../content/paper3';
 import { SECTIONS, TOPIC_BY_ID, topicOf } from '../content/syllabus';
 import { buildFocusMock, buildMock, LEVELS, MOCK_MINUTES, recommendedLevel, type Level, type ServedQ } from '../engine/session';
 import { getState } from '../store';
@@ -77,11 +78,28 @@ export function ExamHub() {
       </section>
 
       <section className="stack">
+        <h2>Paper 03: practical skills</h2>
+        <p className="muted">
+          For the SBA and for private candidates sitting Paper 03/2: observations and inferences, reading instruments, graphs, titration
+          calculations and planning investigations, with mark schemes.
+        </p>
+        <div className="list">
+          <Link to="/exam/paper3">
+            <span>
+              <h3>Paper 03 practice and skills guide</h3>
+              <span className="small muted">{PAPER3.length} questions across {Object.keys(P3_SKILLS).length} skills, plus a scale-reading drill</span>
+            </span>
+            <span className="go">Open</span>
+          </Link>
+        </div>
+      </section>
+
+      <section className="stack">
         <h2>How the real exam is set</h2>
         <dl className="facts-list">
           <div><dt>Paper 01</dt><dd>60 multiple-choice questions, 60 marks</dd></div>
           <div><dt>Paper 02</dt><dd>6 compulsory questions (1 data analysis, 2 structured, 3 extended), 100 marks</dd></div>
-          <div><dt>Paper 03/1 or 03/2</dt><dd>School-based assessment, or the written alternative for private candidates</dd></div>
+          <div><dt>Paper 03/1 or 03/2</dt><dd>School-based assessment (lab reports), or a written practical paper for private candidates. <Link to="/exam/paper3">Practise it</Link></dd></div>
         </dl>
         <p className="small muted">
           Mock papers here follow that shape with original questions. The best guide to real questions is CXC's own subject reports, where examiners say what each question tested and where candidates lost marks. They are free on cxc.org; past papers are sold in the CXC Store. See <Link to="/resources">Resources</Link>.
@@ -358,7 +376,9 @@ export function Paper2() {
 }
 
 function Paper2Run({ id }: { id: string }) {
-  const q = PAPER2.find((x) => x.id === id);
+  const q = PAPER2.find((x) => x.id === id) ?? PAPER3.find((x) => x.id === id);
+  const p3 = id.startsWith('p3-');
+  const back = p3 ? { to: '/exam/paper3', label: 'Paper 03 practice' } : { to: '/exam', label: 'Exam practice' };
   const [shown, setShown] = useState<Record<number, boolean>>({});
   const [ticks, setTicks] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState(false);
@@ -377,8 +397,8 @@ function Paper2Run({ id }: { id: string }) {
   return (
     <div className="page">
       <header className="stack tight">
-        <Link to="/exam" className="small">Exam practice</Link>
-        <p className="muted small">{q.kind}, {total} marks</p>
+        <Link to={back.to} className="small">{back.label}</Link>
+        <p className="muted small">{p3 ? `Paper 03, ${P3_SKILLS[(q as (typeof PAPER3)[number]).skill].name}` : q.kind}, {total} marks</p>
         <h1>{q.title}</h1>
         <p><Rich text={q.intro} /></p>
         {q.table && (

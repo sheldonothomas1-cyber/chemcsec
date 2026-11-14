@@ -140,7 +140,7 @@ function TutorSetup({ settings, onChange }: { settings: TutorSettings; onChange:
           </div>
           <div className="row">
             <button className="btn primary" type="submit" disabled={!draftKey.trim()}>Save key on this device</button>
-            <Link className="btn quiet" to="/help">Search the lessons instead</Link>
+            <Link className="btn quiet" to="/search">Search the app instead</Link>
           </div>
         </form>
       )}
