@@ -7,7 +7,7 @@ import { RESOURCES, SBA_SKELETON, SBA_SKILLS } from '../content/extras';
 import { fmt } from '../content/generators';
 import { TOPIC_BY_ID } from '../content/syllabus';
 import { InstallSteps } from '../components/InstallCard';
-import { APK_URL, isNativeApp, SITE_URL, useApkAvailable } from '../install';
+import { APK_URL, isNativeApp, PRIVACY_URL, SITE_URL, useApkAvailable } from '../install';
 import { search } from '../tutor/retrieve';
 import { exportData, importData, resetAll, setProfile, toggleSba, useStore } from '../store';
 
@@ -407,6 +407,7 @@ export function Settings() {
         <h2>Your data</h2>
         <p className="muted">
           Your answers and progress are stored only in this browser on this device. Nothing is uploaded. Save a backup before clearing your browser or changing phones.
+          {' '}<a href={PRIVACY_URL} target={isNativeApp ? '_system' : '_blank'} rel="noreferrer">Privacy policy</a>
         </p>
         <div className="row">
           <button className="btn" type="button" onClick={download}>Save a backup</button>

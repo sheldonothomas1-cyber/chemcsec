@@ -4,6 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { useEffect, useState } from 'react';
 
 export const SITE_URL = 'https://sheldonothomas1-cyber.github.io/chemcsec/';
+export const PRIVACY_URL = 'https://sheldonothomas1-cyber.github.io/chemcsec/privacy.html';
 export const APK_URL = 'https://github.com/sheldonothomas1-cyber/chemcsec/releases/latest/download/ChemCSEC.apk';
 const LATEST_RELEASE_API = 'https://api.github.com/repos/sheldonothomas1-cyber/chemcsec/releases/latest';
 
@@ -120,7 +121,8 @@ const UPDATE_CHECK_KEY = 'chemcsec:update-check';
  * Releases are tagged v<build number>. Returns the newer build number, or null.
  */
 export async function newerApkBuild(now = Date.now()): Promise<number | null> {
-  if (!isNativeApp || !navigator.onLine) return null;
+  // Google Play apps may only update through Play, so the Play build never looks for an APK.
+  if (!isNativeApp || __PLAY__ || !navigator.onLine) return null;
   try {
     const cached = JSON.parse(localStorage.getItem(UPDATE_CHECK_KEY) ?? 'null') as { t: number; build: number } | null;
     let latest = cached && now - cached.t < 86_400_000 ? cached.build : null;

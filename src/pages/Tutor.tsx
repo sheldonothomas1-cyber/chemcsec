@@ -17,6 +17,18 @@ interface Bubble {
   tools?: string[];
 }
 
+/**
+ * Google Play requires apps with AI-generated content to let people flag it. This opens a
+ * pre-filled issue on the project's GitHub page; the learner sees it and chooses to send it.
+ * Only the tutor's reply is included, never the learner's own messages or progress.
+ */
+const REPORT_BASE = 'https://github.com/sheldonothomas1-cyber/chemcsec/issues/new';
+function reportUrl(reply: string): string {
+  const quoted = reply.slice(0, 1500).replace(/\n/g, '\n> ');
+  const body = `**What is wrong with this reply?** (wrong chemistry, unsafe, offensive, other)\n\n\n**The tutor's reply:**\n\n> ${quoted}`;
+  return `${REPORT_BASE}?${new URLSearchParams({ title: 'AI tutor reply report', labels: 'tutor-report', body })}`;
+}
+
 // The conversation lives outside the component so it survives moving between screens.
 // It is cleared on "New chat", when the provider, model or key changes, and on reload.
 const chat = {
@@ -289,6 +301,9 @@ export function Tutor() {
                 </ul>
               )}
               {b.text ? <TutorText text={b.text} /> : busy && i === bubbles.length - 1 ? <p className="muted">Thinking…</p> : null}
+              {b.text && !(busy && i === bubbles.length - 1) && (
+                <a className="small muted report-reply" href={reportUrl(b.text)} target="_blank" rel="noreferrer">Report this reply</a>
+              )}
             </div>
           ),
         )}

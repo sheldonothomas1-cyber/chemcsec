@@ -367,9 +367,9 @@ button.rung { cursor: pointer; }
 .rung.marker { border-style: dashed; color: var(--muted); background: transparent; }
 .rung.on { border-color: var(--orange); background: var(--orange-soft); font-weight: 700; }
 .fade-fill { transition: fill 600ms, opacity 600ms; }
-.bubble { animation: rise 2s linear infinite; }
+circle.bubble { animation: rise 2s linear infinite; }
 @keyframes rise { from { transform: translateY(0); opacity: 0.9; } to { transform: translateY(-88px); opacity: 0; } }
-.bubble.tall { animation-name: rise-tall; animation-duration: 2.2s; }
+circle.bubble.tall { animation-name: rise-tall; animation-duration: 2.2s; }
 @keyframes rise-tall { from { transform: translateY(0); opacity: 0.95; } to { transform: translateY(-110px); opacity: 0; } }
 .flame { animation: flicker 0.5s ease-in-out infinite alternate; }
 @keyframes flicker { from { transform: scale(1, 1); } to { transform: scale(0.92, 1.08); } }
@@ -390,3 +390,4 @@ button.rung { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+.report-reply { justify-self: start; text-decoration: underline; text-underline-offset: 3px; }

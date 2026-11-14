@@ -80,8 +80,13 @@ jobs:
             echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.p12"
             export KEYSTORE_FILE="$RUNNER_TEMP/release.p12"
             ./gradlew assembleRelease --no-daemon
-            rm -f "$RUNNER_TEMP/release.p12"
             cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/ChemCSEC.apk"
+            # The app bundle (.aab) is what Google Play takes. It is built from a copy of the web
+            # app with APP_STORE=play, which never offers APK updates (Play forbids self-updating).
+            (cd .. && APP_STORE=play npm run build && npx cap sync android)
+            ./gradlew bundleRelease --no-daemon
+            cp app/build/outputs/bundle/release/app-release.aab "$GITHUB_WORKSPACE/ChemCSEC.aab"
+            rm -f "$RUNNER_TEMP/release.p12"
             echo "signed=true" >> "$GITHUB_OUTPUT"
           else
             # Without the signing key the app is still built and tested, but never released:
@@ -97,10 +102,16 @@ jobs:
           "$TOOLS/apksigner" verify --print-certs ChemCSEC.apk
           "$TOOLS/aapt" dump badging ChemCSEC.apk | grep -E "^package|^sdkVersion|^targetSdkVersion|^application-label:"
           ls -la ChemCSEC.apk
+          if [ -f ChemCSEC.aab ]; then jarsigner -verify ChemCSEC.aab | tail -1; ls -la ChemCSEC.aab; fi
       - uses: actions/upload-artifact@v4
         with:
           name: apk
           path: ChemCSEC.apk
+      - uses: actions/upload-artifact@v4
+        if: steps.build.outputs.signed == 'true'
+        with:
+          name: aab
+          path: ChemCSEC.aab
 
   smoke-test:
     needs: apk
@@ -140,11 +151,14 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: apk
+      - uses: actions/download-artifact@v4
+        with:
+          name: aab
       - name: Publish the APK as the latest release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v${BUILD_NUMBER}" ChemCSEC.apk \
+          gh release create "v${BUILD_NUMBER}" ChemCSEC.apk ChemCSEC.aab \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
             --title "ChemCSEC build ${BUILD_NUMBER}" \
-            --notes "Android app for CSEC Chemistry. Download ChemCSEC.apk and open it to install. Android will ask you to allow installs from your browser or file manager because the app is not from the Play Store. The same app is available without an APK at https://sheldonothomas1-cyber.github.io/chemcsec/"
+            --notes "Android app for CSEC Chemistry. Download ChemCSEC.apk and open it to install. Android will ask you to allow installs from your browser or file manager because the app is not from the Play Store. The same app is available without an APK at https://sheldonothomas1-cyber.github.io/chemcsec/ (ChemCSEC.aab is the same build packaged for upload to Google Play; it cannot be installed directly.)"

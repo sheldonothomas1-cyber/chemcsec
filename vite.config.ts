@@ -6,7 +6,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   base: './',
   // The deploy workflow passes its run number, so an installed APK can tell when a newer build exists.
-  define: { __BUILD__: Number(process.env.BUILD_NUMBER ?? 0) },
+  // APP_STORE=play marks the Google Play build: Play delivers its updates, so it never offers an APK.
+  define: { __BUILD__: Number(process.env.BUILD_NUMBER ?? 0), __PLAY__: process.env.APP_STORE === 'play' },
   plugins: [
     react(),
     VitePWA({
