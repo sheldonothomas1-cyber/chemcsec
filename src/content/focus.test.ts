@@ -53,6 +53,6 @@ describe('focus areas', () => {
   it('titre answers are marked to 0.015 cm³, not 2%', () => {
     const q = serveGenerator(GENERATOR_BY_ID['g-titre-mean'], mulberry32(5), false);
     expect(checkTyped(q, String(q.answer))).toBe(true);
-    expect(checkTyped(q, String(q.answer + 0.1))).toBe(false);
+    expect(checkTyped(q, String(q.answer! + 0.1))).toBe(false);
   });
 });
