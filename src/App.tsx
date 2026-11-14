@@ -1,10 +1,11 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
-import { ExamHub, Paper1, Paper2 } from './pages/Exam';
+import { ExamHub, FocusPaper, Paper1, Paper2 } from './pages/Exam';
 import { LearnMap, TopicPage } from './pages/Learn';
 import { Help, Install, MoreMenu, Resources, Sba, Settings, Tools } from './pages/More';
 import { PracticeHub, PracticeRun } from './pages/Practice';
 import { Progress } from './pages/Progress';
+import { FocusHub, FocusPage } from './pages/Focus';
 import { Lab } from './pages/Lab';
 import { PeriodicTable } from './pages/PeriodicTable';
 import { Reference } from './pages/Reference';
@@ -38,6 +39,7 @@ const MAIN = [
   { to: '/progress', label: 'Progress', icon: ICONS.progress },
 ];
 const EXTRA = [
+  { to: '/focus', label: 'Focus areas', icon: ICONS.progress },
   { to: '/lab', label: 'Virtual lab', icon: ICONS.practice },
   { to: '/periodic-table', label: 'Periodic table', icon: ICONS.learn },
   { to: '/reference', label: 'Quick reference', icon: ICONS.exam },
@@ -101,6 +103,9 @@ export function App() {
           <Route path="/resources" element={<Resources />} />
           <Route path="/sba" element={<Sba />} />
           <Route path="/install" element={<Install />} />
+          <Route path="/focus" element={<FocusHub />} />
+          <Route path="/focus/:id" element={<FocusPage />} />
+          <Route path="/exam/focus/:id" element={<FocusPaper />} />
           <Route path="/lab" element={<Lab />} />
           <Route path="/lab/:bench" element={<Lab />} />
           <Route path="/periodic-table" element={<PeriodicTable />} />

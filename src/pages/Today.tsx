@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { InstallCard } from '../components/InstallCard';
 import { TopicTile } from '../components/Tile';
+import { FOCUS_AREAS } from '../content/focus';
 import { TOPICS, TOPIC_BY_ID } from '../content/syllabus';
-import { daysToExam, dueChecks, dueObjectives, nextTopic, overallMastery, streak, todayStats } from '../engine/select';
+import { objP, daysToExam, dueChecks, dueObjectives, nextTopic, overallMastery, streak, todayStats } from '../engine/select';
 import { setProfile, useStore } from '../store';
 
 function greeting(name: string) {
@@ -108,6 +109,25 @@ export function Today() {
         <div>
           <div className="num">{days === null ? `${Math.round(overallMastery(s) * 100)}%` : Math.max(days, 0)}</div>
           <div className="small muted">{days === null ? 'of syllabus mastered' : days >= 0 ? 'days to your exam' : 'exam date has passed'}</div>
+        </div>
+      </section>
+
+      <section className="stack">
+        <div className="between">
+          <h2>Focus areas</h2>
+          <Link to="/focus">All guides</Link>
+        </div>
+        <div className="focus-grid">
+          {FOCUS_AREAS.map((f) => {
+            const m = f.objectives.reduce((sum, o) => sum + objP(s, o), 0) / f.objectives.length;
+            return (
+              <Link key={f.id} to={`/focus/${f.id}`} className="focus-chip">
+                <strong>{f.short}</strong>
+                <span className="bar" style={{ ['--m' as string]: m }}><span /></span>
+                <span className="small muted">{Math.round(m * 100)}% mastered</span>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

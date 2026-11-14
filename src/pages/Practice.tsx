@@ -5,8 +5,9 @@ import { GENERATORS } from '../content/generators';
 import { ITEMS } from '../content/items';
 import { SECTIONS, TOPICS, TOPIC_BY_ID, type SectionId } from '../content/syllabus';
 import { dueObjectives } from '../engine/select';
-import { buildChallenge, buildMistakes, buildReview, buildSmartSession, buildTopicSession, mistakeIds, type ServedQ } from '../engine/session';
+import { buildChallenge, buildFocusSession, buildMistakes, buildReview, buildSmartSession, buildTopicSession, mistakeIds, type ServedQ } from '../engine/session';
 import { TEMPLATES } from '../content/templates';
+import { FOCUS_BY_ID } from '../content/focus';
 import { getState, useStore, type Attempt } from '../store';
 
 export function PracticeHub() {
@@ -63,6 +64,8 @@ function build(mode: string, arg?: string): { questions: ServedQ[]; title: strin
   switch (mode) {
     case 'smart': return { questions: buildSmartSession(s, 10), title: "Today's session", mode: 'session' };
     case 'review': return { questions: buildReview(s), title: 'Reviews due', mode: 'review' };
+    case 'focus': return arg && FOCUS_BY_ID[arg] ? { questions: buildFocusSession(s, arg, 12), title: FOCUS_BY_ID[arg].name, mode: 'topic' } : null;
+    case 'focus-hard': return arg && FOCUS_BY_ID[arg] ? { questions: buildFocusSession(s, arg, 12, true), title: `${FOCUS_BY_ID[arg].name}: harder`, mode: 'challenge' } : null;
     case 'mistakes': return { questions: buildMistakes(s), title: 'Fix my mistakes', mode: 'review' };
     case 'challenge': return { questions: buildChallenge(8), title: 'Mixed calculations', mode: 'challenge' };
     case 'topic': return arg && TOPIC_BY_ID[arg] ? { questions: buildTopicSession(s, arg, 9), title: TOPIC_BY_ID[arg].name, mode: 'topic' } : null;

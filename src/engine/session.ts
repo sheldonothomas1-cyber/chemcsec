@@ -4,6 +4,7 @@
 import { fmt, GENERATOR_BY_ID, GENERATORS, GENERATORS_BY_OBJ, mulberry32, type Generator, type Rng } from '../content/generators';
 import { ITEMS, ITEMS_BY_OBJ, type McqItem } from '../content/items';
 import { ALL_OBJECTIVES, TOPICS, TOPIC_BY_ID, type Profile } from '../content/syllabus';
+import { FOCUS_BY_ID, FOCUS_OBJECTIVES } from '../content/focus';
 import { TEMPLATE_BY_ID, TEMPLATES, TEMPLATES_BY_OBJ, type Template } from '../content/templates';
 import type { AppState } from '../store';
 import { dueObjectives, isReady, objN, objP, topicMastery } from './select';
@@ -21,6 +22,7 @@ export interface ServedQ {
   unit?: string;
   exact?: boolean;
   signed?: boolean;
+  tolerance?: number;
   why: string;
   steps?: string[];
   tag?: 'review' | 'new' | 'challenge';
@@ -58,7 +60,7 @@ export function serveGenerator(g: Generator, rng: Rng, asMcq: boolean): ServedQ 
     const label = (x: number) => `${fmt(x, inst.signed)}${inst.unit ? ' ' + inst.unit : ''}`;
     return serveOptions(g.id, g.obj, g.profile, inst.stem, [inst.answer, ...inst.distractors].map(label), why, rng, inst.steps);
   }
-  return { key: newKey(), itemId: g.id, obj: g.obj, profile: g.profile, kind: 'num', stem: inst.stem, why, steps: inst.steps, answer: inst.answer, unit: inst.unit, exact: inst.exact, signed: inst.signed };
+  return { key: newKey(), itemId: g.id, obj: g.obj, profile: g.profile, kind: 'num', stem: inst.stem, why, steps: inst.steps, answer: inst.answer, unit: inst.unit, exact: inst.exact, signed: inst.signed, tolerance: inst.tolerance };
 }
 
 /** Is a typed answer right? Whole-number answers must match; others get a 2% tolerance. */
@@ -68,6 +70,7 @@ export function checkTyped(q: ServedQ, raw: string): boolean | null {
   if (!m || q.answer === undefined) return null;
   const x = parseFloat(m[0]);
   if (q.exact) return x === q.answer;
+  if (q.tolerance !== undefined) return Math.abs(x - q.answer) <= q.tolerance;
   return Math.abs(x - q.answer) <= Math.max(Math.abs(q.answer) * 0.02, 1e-9);
 }
 
@@ -107,7 +110,9 @@ function learningQueue(s: AppState): string[] {
   const pool = (ready.length ? ready : TOPICS).filter((t) => topicMastery(s, t) < 0.85);
   const shaky = pool.flatMap((t) => t.objectives).filter((o) => objN(s, o.id) > 0 && objP(s, o.id) < 0.6)
     .sort((a, b) => objP(s, a.id) - objP(s, b.id)).map((o) => o.id);
-  const untouched = pool.flatMap((t) => t.objectives).filter((o) => objN(s, o.id) === 0).map((o) => o.id);
+  // Within the untouched objectives, the focus areas come first.
+  const untouched = pool.flatMap((t) => t.objectives).filter((o) => objN(s, o.id) === 0).map((o) => o.id)
+    .sort((a, b) => Number(FOCUS_OBJECTIVES.has(b)) - Number(FOCUS_OBJECTIVES.has(a)));
   const growing = pool.flatMap((t) => t.objectives).filter((o) => objN(s, o.id) > 0 && objP(s, o.id) >= 0.6 && objP(s, o.id) < 0.85).map((o) => o.id);
   return [...shaky, ...untouched.slice(0, 6), ...growing, ...untouched.slice(6)];
 }
@@ -221,8 +226,8 @@ export const LEVELS: Record<Level, { name: string; note: string }> = {
 const LEVEL_WEIGHT: Record<Level, [number, number, number]> = { 1: [3, 2, 0.4], 2: [1, 3, 2], 3: [0.3, 2, 4.5] };
 
 /** The level to suggest next: move up after 70% or better, down after less than 40%. */
-export function recommendedLevel(s: AppState): Level {
-  const last = s.mocks[s.mocks.length - 1];
+export function recommendedLevel(s: AppState, focusId?: string): Level {
+  const last = (s.mocks ?? []).filter((m) => (m.focus ?? undefined) === focusId).pop();
   if (!last) return 1;
   const level = (last.level ?? 1) as Level;
   const pct = last.score / last.size;
@@ -257,3 +262,47 @@ export function buildMock(size: number, level: Level = 1, seed = seedNow(), avoi
 }
 
 export const MOCK_MINUTES = (size: number) => Math.round((size * 75) / 60);
+
+// ---------------------------------------------------------------- focus areas
+/**
+ * A drill on one focus area: the weakest objectives get the most questions, and the
+ * difficulty follows the learner's mastery (or is pushed up when `harder` is set).
+ */
+export function buildFocusSession(s: AppState, focusId: string, n = 12, harder = false): ServedQ[] {
+  const area = FOCUS_BY_ID[focusId];
+  const rng = mulberry32(seedNow());
+  const used = new Set<string>();
+  // A copy of the learner's state with mastery nudged up, so pickFor chooses harder questions.
+  const view: AppState = harder
+    ? { ...s, mastery: Object.fromEntries(area.objectives.map((o) => [o, { p: 0.9, n: 1, ok: 1, last: 0 }])) }
+    : s;
+  const order = [...area.objectives].sort((a, b) => objP(s, a) - objP(s, b));
+  // Weakest objectives appear twice in the rotation.
+  const rotation = [...order, ...order.slice(0, Math.ceil(order.length / 2))];
+  const out: ServedQ[] = [];
+  for (let i = 0; out.length < n && i < n * 4; i++) {
+    const q = pickFor(view, rotation[i % rotation.length], rng, used);
+    if (q) out.push(q);
+  }
+  return shuffle(out, rng);
+}
+
+/** A timed multiple-choice paper drawn only from one focus area, spread across its objectives. */
+export function buildFocusMock(focusId: string, size: number, level: Level = 1, seed = seedNow()): ServedQ[] {
+  const area = FOCUS_BY_ID[focusId];
+  const rng = mulberry32(seed);
+  const w = LEVEL_WEIGHT[level];
+  const per = Math.ceil(size / area.objectives.length);
+  const out: ServedQ[] = [];
+  for (const obj of area.objectives) {
+    type Entry = { weight: number; make: () => ServedQ };
+    const pool: Entry[] = [
+      ...(ITEMS_BY_OBJ[obj] ?? []).map((i) => ({ weight: w[i.diff - 1], make: () => serveItem(i, rng) })),
+      ...(TEMPLATES_BY_OBJ[obj] ?? []).flatMap((x) => [0, 1, 2].map(() => ({ weight: w[x.diff - 1] * 0.7, make: () => serveTemplate(x, rng) }))),
+      ...(GENERATORS_BY_OBJ[obj] ?? []).flatMap((g) => [0, 1, 2].map(() => ({ weight: w[g.diff - 1] * 0.7, make: () => serveGenerator(g, rng, true) }))),
+    ];
+    const chosen = pool.map((e) => ({ e, key: Math.pow(rng(), 1 / e.weight) })).sort((a, b) => b.key - a.key).slice(0, per);
+    out.push(...chosen.map((c) => c.e.make()));
+  }
+  return shuffle(out, rng).slice(0, size);
+}

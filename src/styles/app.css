@@ -211,7 +211,7 @@ ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 .sim-frame { width: 100%; aspect-ratio: 4 / 3; border: 1px solid var(--line); border-radius: var(--r-control); background: var(--sunk); }
 .objective { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 10px 0; }
 .objective + .objective { border-top: 1px solid var(--line); }
-.bar { height: 8px; border-radius: 99px; background: var(--sunk); overflow: hidden; grid-column: 1 / -1; }
+.bar { display: block; height: 8px; border-radius: 99px; background: var(--sunk); overflow: hidden; grid-column: 1 / -1; }
 .bar > span { display: block; height: 100%; border-radius: 99px; background: color-mix(in oklab, var(--orange) calc((1 - var(--m, 0)) * 100%), var(--green)); width: calc(var(--m, 0) * 100%); transition: width 500ms; }
 
 /* ---------- questions ---------- */
@@ -343,6 +343,14 @@ select.input { appearance: auto; }
 .shell-ring { transform-origin: 100px 100px; animation: orbit linear infinite; }
 .shell-ring.reverse { animation-direction: reverse; }
 @keyframes orbit { to { transform: rotate(360deg); } }
+
+/* ---------- focus areas ---------- */
+.method summary { cursor: pointer; list-style-position: outside; }
+.method summary .muted { display: block; margin-top: 2px; }
+.method[open] summary { margin-bottom: 4px; }
+.focus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.focus-chip { display: grid; gap: 6px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-control); background: var(--surface); color: var(--ink); text-decoration: none; }
+.focus-chip:hover { border-color: var(--blue); }
 
 /* ---------- virtual lab and lesson visuals ---------- */
 .bench { display: grid; gap: 20px; padding: 18px; border: 1px solid var(--line); border-radius: var(--r-sheet); background: var(--surface); }

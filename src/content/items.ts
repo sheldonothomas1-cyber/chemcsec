@@ -1,6 +1,7 @@
 // Original multiple-choice questions written for this app (never copied from CXC papers).
 // Authoring format: q(objective, stem, [CORRECT, wrong, wrong, wrong], why, profile, difficulty).
 // The first option is always the correct one; options are shuffled when a question is served.
+import { FOCUS_ITEMS } from './items-focus';
 import type { Profile } from './syllabus';
 
 export interface McqItem {
@@ -242,6 +243,8 @@ export const ITEMS: McqItem[] = [
   q('C4.3', 'A colourless liquid turns anhydrous copper(II) sulfate from white to blue. This shows that the liquid', ['contains water', 'is pure water', 'is an acid', 'contains copper'], 'The test shows water is present. A fixed boiling point of 100 °C would be needed to show purity.', 'XS'),
   q('C4.3', 'A gas burns with a squeaky pop when a lighted splint is held to it. The gas is', ['hydrogen', 'oxygen', 'carbon dioxide', 'ammonia'], 'The pop is a small explosion as hydrogen burns in air.', 'XS', 1),
 ];
+
+ITEMS.push(...FOCUS_ITEMS);
 
 export const ITEMS_BY_OBJ: Record<string, McqItem[]> = {};
 for (const item of ITEMS) (ITEMS_BY_OBJ[item.obj] ??= []).push(item);

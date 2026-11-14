@@ -30,6 +30,8 @@ export interface GenInstance {
   /** Answers are whole numbers that must match exactly (oxidation numbers, coefficients). */
   exact?: boolean;
   signed?: boolean;
+  /** Absolute tolerance for typed answers, when 2% is too loose (e.g. burette readings). */
+  tolerance?: number;
 }
 
 export interface Generator {
@@ -536,6 +538,73 @@ export const GENERATORS: Generator[] = [
           `Percentage yield = (actual ÷ theoretical) × 100 = (${fmt(actual)} ÷ ${fmt(theory)}) × 100 = ${p}%`,
         ],
         distractors: wrongs(p, [100 - p, (actual / mass) * 100, (theory / mass) * 100, p / 2, p + 15]),
+      };
+    },
+  },
+  // ---- focus areas: titration and electrochemistry ----
+  {
+    id: 'g-titre-mean', obj: 'A7.4', label: 'Choosing concordant titres', profile: 'XS', diff: 2,
+    make(rng) {
+      const base = pick(rng, [18.4, 19.6, 21.2, 22.8, 23.5, 24.6]);
+      const rough = round(base + 0.4 + rng() * 0.6, 2);
+      const good = [0, 0.05, 0.1].map((d) => round(base + d, 2));
+      const odd = round(base + pick(rng, [0.35, 0.4, 0.5]), 2);
+      const titres = [...good, odd];
+      const order = [titres[0], titres[3], titres[1], titres[2]];
+      const answer = round((good[0] + good[1] + good[2]) / 3, 2);
+      const all4 = round((good[0] + good[1] + good[2] + odd) / 4, 2);
+      return {
+        stem: `A student's titres were: rough ${rough.toFixed(2)} cm³, then ${order.map((t) => t.toFixed(2)).join(', ')} cm³. Using only concordant results (within 0.10 cm³ of each other), what is the mean titre?`,
+        answer, unit: 'cm³', tolerance: 0.015,
+        steps: [
+          'Leave out the rough titre: it is only a guide.',
+          `Concordant results are ${good.map((t) => t.toFixed(2)).join(', ')} cm³; ${odd.toFixed(2)} cm³ is too far from them.`,
+          `Mean = (${good.map((t) => t.toFixed(2)).join(' + ')}) ÷ 3 = ${answer.toFixed(2)} cm³`,
+        ],
+        distractors: wrongs(answer, [all4, round((rough + good[0] + good[1] + good[2] + odd) / 5, 2), round((good[0] + odd) / 2, 2), rough]),
+      };
+    },
+  },
+  {
+    id: 'g-titration-alkali', obj: 'A7.4', label: 'Concentration of the alkali from a titration', profile: 'UK', diff: 3,
+    make(rng) {
+      const t = pick(rng, TITRATIONS);
+      const cAcid = pick(rng, [0.05, 0.1, 0.2]);
+      const vAcid = pick(rng, [12.5, 15.0, 20.0, 22.5]);
+      const vAlk = 25.0;
+      const nAcid = (cAcid * vAcid) / 1000;
+      const nAlk = (nAcid * t.b) / t.a;
+      const answer = round(nAlk / (vAlk / 1000), 4);
+      return {
+        stem: `${vAcid.toFixed(1)} cm³ of ${cAcid} mol dm⁻³ ${t.acid[0]} exactly neutralises 25.0 cm³ of ${t.alkali[0]}. Calculate the concentration of the ${t.alkali[0]} in mol dm⁻³. [[${t.eq}]]`,
+        answer, unit: 'mol dm⁻³',
+        steps: [
+          `Moles of [[${t.acid[1]}]] = ${cAcid} × ${vAcid.toFixed(1)} ÷ 1000 = ${fmt(nAcid)} mol`,
+          `Mole ratio acid : alkali = ${t.a} : ${t.b}, so moles of [[${t.alkali[1]}]] = ${fmt(nAlk)} mol`,
+          `Concentration = ${fmt(nAlk)} ÷ (25.0 ÷ 1000) = ${fmt(answer)} mol dm⁻³`,
+        ],
+        distractors: wrongs(answer, [nAcid / (vAlk / 1000), ((nAcid * t.a) / t.b) / (vAlk / 1000), (cAcid * vAcid) / vAlk, nAlk / vAlk]),
+      };
+    },
+  },
+  {
+    id: 'g-faraday-gas', obj: 'A9.3', label: 'Volume of gas from electrolysis', profile: 'UK', diff: 3,
+    make(rng) {
+      const [gas, f, eper] = pick(rng, [['hydrogen', 'H2', 2], ['chlorine', 'Cl2', 2], ['oxygen', 'O2', 4]] as const);
+      const [ne, current, time] = pick(rng, [[0.02, 2, 965], [0.04, 2, 1930], [0.1, 5, 1930], [0.2, 10, 1930], [0.4, 10, 3860], [0.08, 4, 1930]] as const);
+      const nGas = ne / eper;
+      const answer = round(nGas * 24, 4);
+      const half = f === 'H2' ? '2H+ + 2e- -> H2' : f === 'Cl2' ? '2Cl- -> Cl2 + 2e-' : '4OH- -> 2H2O + O2 + 4e-';
+      return {
+        stem: `A current of ${current} A flows for ${time} s during an electrolysis. What volume of ${gas} is produced at room temperature and pressure? [[${half}]] (1 mol of electrons = 96 500 C; 1 mol of gas = 24 dm³)`,
+        answer, unit: 'dm³',
+        steps: [
+          `Charge Q = I × t = ${current} × ${time} = ${current * time} C`,
+          `Moles of electrons = ${current * time} ÷ 96 500 = ${fmt(ne)} mol`,
+          `The half-equation shows ${eper} mol of electrons for 1 mol of [[${f}]], so moles of gas = ${fmt(nGas)} mol`,
+          `Volume = ${fmt(nGas)} × 24 = ${fmt(answer)} dm³`,
+        ],
+        distractors: wrongs(answer, [ne * 24, (ne / (eper === 4 ? 2 : 4)) * 24, nGas * 22.4, nGas]),
       };
     },
   },

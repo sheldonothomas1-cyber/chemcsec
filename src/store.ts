@@ -22,6 +22,8 @@ export interface MockResult {
   level?: number;
   /** Question ids used, so the next papers can avoid repeating them. */
   items?: string[];
+  /** Set for a focus-area paper; these are kept out of the overall grade estimate. */
+  focus?: string;
   minutes: number;
   bySection: Record<string, [right: number, total: number]>;
   byProfile: Record<string, [right: number, total: number]>;

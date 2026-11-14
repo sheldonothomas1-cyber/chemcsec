@@ -129,7 +129,7 @@ export function Progress() {
 
       <section className="stack">
         <h2>Mock exams</h2>
-        {s.mocks.length ? <MockTrend mocks={s.mocks} /> : <p className="muted">No mocks yet. A 20-question quick mock takes 25 minutes.</p>}
+        {s.mocks.some((m) => !m.focus) ? <MockTrend mocks={s.mocks.filter((m) => !m.focus)} /> : <p className="muted">No mocks yet. A 20-question quick mock takes 25 minutes.</p>}
         <div><Link className="btn" to="/exam">Go to exam practice</Link></div>
       </section>
 

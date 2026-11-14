@@ -4,8 +4,9 @@ import { Rich } from '../components/Rich';
 import { QuestionView, Solution } from '../components/Runner';
 import { COMMAND_WORDS, PAPER2, P2_TOTAL } from '../content/paper2';
 import { SECTIONS, TOPIC_BY_ID, topicOf } from '../content/syllabus';
-import { buildMock, LEVELS, MOCK_MINUTES, recommendedLevel, type Level, type ServedQ } from '../engine/session';
+import { buildFocusMock, buildMock, LEVELS, MOCK_MINUTES, recommendedLevel, type Level, type ServedQ } from '../engine/session';
 import { getState } from '../store';
+import { FOCUS_BY_ID } from '../content/focus';
 import { recordAnswers, saveMock, saveP2, useStore, type MockResult } from '../store';
 
 const pct = (a: number, b: number) => (b ? Math.round((a / b) * 100) : 0);
@@ -43,7 +44,7 @@ export function ExamHub() {
         {s.mocks.length > 0 && (
           <div className="stack tight">
             <p className="label">Your mock results</p>
-            {s.mocks.slice(-5).reverse().map((m) => (
+            {s.mocks.filter((m) => !m.focus).slice(-5).reverse().map((m) => (
               <div key={m.t} className="meter">
                 <span className="small muted">{dateText(m.t)}{m.level && m.level > 1 ? ` ${LEVELS[m.level as Level].name}` : ''}</span>
                 <div className="bar" style={{ ['--m' as string]: m.score / m.size }}><span /></div>
@@ -117,8 +118,16 @@ export function Paper1() {
   return <Paper1Run key={n} size={n} />;
 }
 
-function Paper1Run({ size }: { size: number }) {
-  const [level, setLevel] = useState<Level>(() => recommendedLevel(getState()));
+/** A 15-question timed paper on one focus area. */
+export function FocusPaper() {
+  const { id = '' } = useParams();
+  const area = FOCUS_BY_ID[id];
+  if (!area) return <div className="page"><h1>That focus area does not exist</h1><Link className="btn primary" to="/focus">See the focus areas</Link></div>;
+  return <Paper1Run key={id} size={15} focusId={id} />;
+}
+
+function Paper1Run({ size, focusId }: { size: number; focusId?: string }) {
+  const [level, setLevel] = useState<Level>(() => recommendedLevel(getState(), focusId));
   const [questions, setQuestions] = useState<ServedQ[]>([]);
   const [started, setStarted] = useState(false);
   const [answers, setAnswers] = useState<(number | null)[]>(() => Array(size).fill(null));
@@ -151,7 +160,7 @@ function Paper1Run({ size }: { size: number }) {
     recordAnswers(questions.map((q, k) => ({
       obj: q.obj, item: q.itemId, kind: 'mcq' as const, profile: q.profile, ok: answers[k] === q.correctIndex, ms: perQ, mode: 'mock' as const,
     })));
-    const r: MockResult = { t: Date.now(), size, score, minutes, bySection, byProfile, byTopic, level, items: questions.map((q) => q.itemId) };
+    const r: MockResult = { t: Date.now(), size, score, minutes, bySection, byProfile, byTopic, level, items: questions.map((q) => q.itemId), focus: focusId };
     saveMock(r);
     setResult(r);
     window.scrollTo({ top: 0 });
@@ -172,8 +181,8 @@ function Paper1Run({ size }: { size: number }) {
   if (!started) {
     return (
       <div className="page">
-        <Link to="/exam" className="small">Exam practice</Link>
-        <h1>{size === 60 ? 'Full mock paper' : 'Quick mock'}</h1>
+        <Link to={focusId ? `/focus/${focusId}` : '/exam'} className="small">{focusId ? FOCUS_BY_ID[focusId].name : 'Exam practice'}</Link>
+        <h1>{focusId ? `${FOCUS_BY_ID[focusId].name}: timed paper` : size === 60 ? 'Full mock paper' : 'Quick mock'}</h1>
         <ul className="plain">
           <li>{size} multiple-choice questions, {MOCK_MINUTES(size)} minutes.</li>
           <li>No feedback until the end, just like the exam.</li>
@@ -186,7 +195,7 @@ function Paper1Run({ size }: { size: number }) {
           {([1, 2, 3] as Level[]).map((l) => (
             <label key={l} className="check">
               <input type="radio" name="mock-level" checked={level === l} onChange={() => setLevel(l)} />
-              <span><strong>{LEVELS[l].name}.</strong> {LEVELS[l].note}{l === recommendedLevel(getState()) ? ' (suggested from your last paper)' : ''}</span>
+              <span><strong>{LEVELS[l].name}.</strong> {LEVELS[l].note}{l === recommendedLevel(getState(), focusId) ? ' (suggested from your last paper)' : ''}</span>
             </label>
           ))}
         </fieldset>
@@ -194,8 +203,8 @@ function Paper1Run({ size }: { size: number }) {
           <button
             className="btn violet" type="button"
             onClick={() => {
-              const avoid = new Set(getState().mocks.slice(-3).flatMap((m) => m.items ?? []));
-              setQuestions(buildMock(size, level, undefined, avoid));
+              const avoid = new Set(getState().mocks.filter((m) => !m.focus).slice(-3).flatMap((m) => m.items ?? []));
+              setQuestions(focusId ? buildFocusMock(focusId, size, level) : buildMock(size, level, undefined, avoid));
               startedAt.current = Date.now();
               setStarted(true);
             }}

@@ -13,6 +13,7 @@ import { exportData, importData, resetAll, setProfile, toggleSba, useStore } fro
 
 export function MoreMenu() {
   const items = [
+    ['/focus', 'Focus areas', 'Study guides, drills and timed papers for the seven most important topics'],
     ['/lab', 'Virtual lab', 'Mock experiments: combine elements, test metals and ions, run electrolysis, rates and titrations'],
     ['/periodic-table', 'Periodic table', 'All 118 elements with shells, properties and trends'],
     ['/reference', 'Quick reference', 'Ions, solubility rules, reactivity series and every test on one page'],

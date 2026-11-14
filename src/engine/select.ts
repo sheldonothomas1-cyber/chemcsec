@@ -121,8 +121,9 @@ const GRADES = ['I', 'II', 'III', 'IV', 'V', 'VI'];
  * grade boundaries, so this is an estimate and is always shown with a range.
  */
 export function predictedGrade(s: AppState): GradeEstimate | null {
-  if (s.mocks.length < 2) return null;
-  const last = s.mocks.slice(-2);
+  const full = s.mocks.filter((m) => !m.focus);
+  if (full.length < 2) return null;
+  const last = full.slice(-2);
   const mockPct = last.reduce((sum, m) => sum + m.score / m.size, 0) / last.length;
   const pct = 0.65 * mockPct + 0.35 * overallMastery(s);
   const cuts = [0.75, 0.6, 0.5, 0.4, 0.3];
