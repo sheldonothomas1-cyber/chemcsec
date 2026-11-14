@@ -12,3 +12,4 @@ docs/research/
 
 # Android signing key: kept on this computer and in GitHub secrets, never in the repository.
 android-signing/
+*.tsbuildinfo
